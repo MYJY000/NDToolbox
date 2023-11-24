@@ -1,0 +1,36 @@
+from copy import deepcopy
+
+from ndbox.utils import METRIC_REGISTRY
+from .regression_metric import calculate_R2, calculate_cc, calculate_mae, calculate_mse, calculate_rmse
+from .classification_metric import calculate_acc
+
+__all__ = [
+    'calculate_metric',
+    # regression_metric.py
+    'calculate_R2',
+    'calculate_cc',
+    'calculate_mae',
+    'calculate_mse',
+    'calculate_rmse',
+    # classification_metric.py
+    'calculate_acc',
+]
+
+
+def calculate_metric(y_true, y_pred, opt):
+    """
+    Calculate metric from datasets and options.
+
+    :param y_true: The true outputs (a matrix of size
+        number of examples x number of outputs).
+    :param y_pred: The predicted outputs (a matrix of
+        size number of examples x number of outputs).
+    :param opt: dict. Configuration. It must contain:
+        type - str. Metric type.
+    :return: The result of metric.
+    """
+
+    opt = deepcopy(opt)
+    metric_type = opt.pop('type')
+    metric = METRIC_REGISTRY.get(metric_type)(y_true, y_pred, **opt)
+    return metric
