@@ -13,6 +13,7 @@ class MLBaseModel:
     def __init__(self, **kwargs):
         self.logger = get_root_logger()
         self.params = {}
+        self.model = None
 
     def fit(self, x, y):
         raise NotImplementedError

@@ -20,7 +20,7 @@ class NWBDataset:
         Initializes an NWBDataset, loading datasets from
         the indicated file(s).
         """
-        
+
         self.name = name
         self.logger = get_root_logger()
         self.logger.info(f"Loading dataset '{name}' from file '{path}'")
@@ -37,6 +37,7 @@ class NWBDataset:
         self.spike_identifier = spike_identifier
         self.smooth_identifier = smooth_identifier
         self.skip_fields = skip_fields if skip_fields is not None else []
+
         self.data_dict, self.content_dict = self._build_data()
         self.logger.info(f"{self.content_repr(self.content_dict)}")
         self.logger.info(f"{self.data_info()}")

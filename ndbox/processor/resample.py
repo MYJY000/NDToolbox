@@ -4,12 +4,18 @@ import pandas as pd
 from ndbox.utils import PROCESSOR_REGISTRY
 
 
+def float_equal(num1, num2, eps=1e-10):
+    if abs(num1 - num2) < eps:
+        return True
+    return False
+
+
 @PROCESSOR_REGISTRY.register()
 def resample(nwb_data, target_bin, **kwargs):
     nwb_data.logger.info(f"Resampling datasets to '{target_bin}' seconds.")
-    if target_bin == nwb_data.bin_size:
+    if float_equal(target_bin, nwb_data.bin_size):
         return
-    if target_bin % nwb_data.bin_size != 0:
+    if float_equal(target_bin % nwb_data.bin_size, 0):
         if nwb_data.spike_train is None:
             nwb_data.logger.error(f"There are no spike train in the dataset. "
                                   f"target_bin must be an integer multiple of "
@@ -43,3 +49,4 @@ def resample(nwb_data, target_bin, **kwargs):
         other_df = nwb_data.data[other_columns].iloc[::resample_factor]
         nwb_data.data = pd.concat([spike_df, other_df], axis=1)
         nwb_data.data.sort_index(axis=1, inplace=True)
+    nwb_data.bin_size = target_bin

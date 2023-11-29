@@ -5,6 +5,7 @@ from .resample import resample
 from .smooth import gaussian_smooth
 
 __all__ = [
+    'run_processor',
     # resample.py
     'resample',
     # smooth.py

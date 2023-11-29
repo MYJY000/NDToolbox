@@ -1,5 +1,5 @@
 name: test
-manual_seed: 0
+random_seed: 0
 
 dataset:
   SubIndy:
@@ -29,43 +29,30 @@ dataset:
 
 experiment:
   exp_1:
+    processor:
+      SubIndy:
+        resample: 0.1
+        smooth:
+          type: gaussian_smooth
+          gauss_width: 0.5  # the standard deviation of the Gaussian to use for smoothing, in seconds
+          ignore_nans: False
+        lag: 0.1            # Lag velocity by 0.12 seconds relative to neural data.
+        split:
+          type: train_test_split
+          test_size: 0.3
+          shuffle: False
+        is_copy: True
     model:
       type: WienerCascadeRegression
       degree: 3
     train:
       dataset: SubIndy
-      split:
-        type: ---------
-      smooth: 0.05      # the standard deviation of the Gaussian to use for smoothing, in seconds
-      lag: 0.12         # Lag velocity by 0.12 seconds relative to neural data.
       target: ['behavior/finger_vel']
-    val_1:
+    test:
       dataset: SubIndy
-      split:
-        type: ---------
-      smooth: 0.05
-      lag: 0.12
       target: ['behavior/finger_vel']
-    val_2:
-      ---------
     metrics:
       R2:
         type: calculate_R2
       CC:
         type: calculate_cc
-
-  exp_2:
-    model:
-      type: SupportVectorRegression
-      path: ---------
-      is_copy: False
-    test:
-      dataset: SubMonk
-      smooth: 0.5
-      lag: 0.15
-      target: ['behavior/cursor']
-    metrics:
-      MAE:
-        type: calculate_mae
-      MSE:
-        type: calculate_mse

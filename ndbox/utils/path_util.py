@@ -18,3 +18,13 @@ def files_form_folder(folder, filename='*'):
         raise NotADirectoryError(f"The path '{folder}' is not a directory!")
     filenames = sorted(glob(os.path.join(folder, filename)))
     return filenames
+
+
+def create_directory_and_files(root_path, dir_structure):
+    for name, sub in dir_structure.items():
+        sub_path = os.path.join(root_path, name)
+        if sub is None:
+            open(sub_path, 'w', encoding='utf-8').close()
+        else:
+            os.makedirs(sub_path)
+            create_directory_and_files(sub_path, sub)
