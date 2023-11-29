@@ -18,7 +18,7 @@ def parse_options(root_path):
     args = parser.parse_args()
 
     if args.name == '-':
-        args.name = args.mode + '_' + str(int(time.time()))
+        args.name = args.mode + '_project_' + str(int(time.time()))
 
     if args.mode == 'r':
         create_regression_project(args)
@@ -47,7 +47,6 @@ def create_project_structure(project_path):
         raise FileExistsError(f"Project {project_path} already exists!")
     os.makedirs(project_path)
     dir_structure = {
-        'result': {},
         'user_define_modules': {
             '__init__.py': None
         },
@@ -67,8 +66,7 @@ def create_project_structure(project_path):
 def user_define_init(filepath):
     with open(filepath, 'w', encoding='utf-8') as f:
         f.write(
-            """
-import glob
+            """import glob
 import importlib
 from os import path
 

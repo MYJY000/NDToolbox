@@ -13,6 +13,7 @@ VAL_MASK = 2
 @PROCESSOR_REGISTRY.register()
 def train_test_split(nwb_data, train_size=None, test_size=None,
                      shuffle=False, stratify_target=None, **kwargs):
+    nwb_data.logger.info(f"Train test split.")
     indices = np.arange(len(nwb_data.data))
     if stratify_target is not None:
         if len(stratify_target) != 1:

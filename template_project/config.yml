@@ -29,14 +29,18 @@ dataset:
 
 experiment:
   exp_1:
-    processor:
+    processor: # The order in the config file is the order in the program executes the processor
       SubIndy:
-        resample: 0.1
+        resample:
+          type: resample
+          target_bin: 0.1
         smooth:
           type: gaussian_smooth
           gauss_width: 0.5  # the standard deviation of the Gaussian to use for smoothing, in seconds
           ignore_nans: False
-        lag: 0.1            # Lag velocity by 0.12 seconds relative to neural data.
+        lag:
+          type: lag_offset
+          offset: 0.1       # The behavior data lagged behind neural data by 0.1 seconds.
         split:
           type: train_test_split
           test_size: 0.3

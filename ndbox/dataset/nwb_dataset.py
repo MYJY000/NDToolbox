@@ -15,7 +15,7 @@ class NWBDataset:
     """
 
     def __init__(self, path, name='NWBDataset', units=None, trials=None, behavior=None,
-                 spike_identifier='spike#', smooth_identifier='smooth#', skip_fields=None, **kwargs):
+                 spike_identifier='spike#', skip_fields=None, **kwargs):
         """
         Initializes an NWBDataset, loading datasets from
         the indicated file(s).
@@ -35,7 +35,7 @@ class NWBDataset:
         self.trials_opt = trials if trials is not None else {}
         self.behavior_list = behavior if behavior is not None else []
         self.spike_identifier = spike_identifier
-        self.smooth_identifier = smooth_identifier
+        self.smooth_identifier = 'smooth#'
         self.skip_fields = skip_fields if skip_fields is not None else []
 
         self.data_dict, self.content_dict = self._build_data()
@@ -237,6 +237,13 @@ class NWBDataset:
             columns.extend(self.behavior_columns[item])
         data = self.data[columns].to_numpy()
         return columns, data
+
+    def get_spike_and_other_columns(self):
+        spike_mask = self.data.columns.str.startswith(self.spike_identifier)
+        smooth_mask = self.data.columns.str.startswith(self.smooth_identifier)
+        spike_columns = self.data.columns[spike_mask | smooth_mask]
+        other_columns = self.data.columns[~(spike_mask | smooth_mask)]
+        return spike_columns, other_columns
 
     def drop_smooth_columns(self):
         drop_mask = self.data.columns.str.startswith(self.smooth_identifier)

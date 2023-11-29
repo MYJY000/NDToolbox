@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from copy import deepcopy
 
 from ndbox.utils import PROCESSOR_REGISTRY
 
@@ -50,3 +51,16 @@ def resample(nwb_data, target_bin, **kwargs):
         nwb_data.data = pd.concat([spike_df, other_df], axis=1)
         nwb_data.data.sort_index(axis=1, inplace=True)
     nwb_data.bin_size = target_bin
+
+
+@PROCESSOR_REGISTRY.register()
+def lag_offset(nwb_data, offset, **kwargs):
+    nwb_data.logger.info(f"Setting offset {offset} seconds.")
+    bin_size = nwb_data.bin_size
+    lag_bins = int(round(offset / bin_size))
+    spike_columns, other_columns = nwb_data.get_spike_and_other_columns()
+    data_index = deepcopy(nwb_data.data.index[:-2 * lag_bins])
+    nwb_data.data[spike_columns] = nwb_data.data[spike_columns].shift(-lag_bins)
+    nwb_data.data[other_columns] = nwb_data.data[other_columns].shift(lag_bins)
+    nwb_data.data = nwb_data.data.dropna()
+    nwb_data.data.index = data_index
