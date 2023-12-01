@@ -16,7 +16,7 @@ def resample(nwb_data, target_bin, **kwargs):
     nwb_data.logger.info(f"Resampling datasets to '{target_bin}' seconds.")
     if float_equal(target_bin, nwb_data.bin_size):
         return
-    if float_equal(target_bin % nwb_data.bin_size, 0):
+    if not float_equal(target_bin % nwb_data.bin_size, 0):
         if nwb_data.spike_train is None:
             nwb_data.logger.error(f"There are no spike train in the dataset. "
                                   f"target_bin must be an integer multiple of "
@@ -56,10 +56,11 @@ def resample(nwb_data, target_bin, **kwargs):
 @PROCESSOR_REGISTRY.register()
 def lag_offset(nwb_data, offset, **kwargs):
     nwb_data.logger.info(f"Setting offset {offset} seconds.")
+    nwb_data.data = nwb_data.data.dropna()
     bin_size = nwb_data.bin_size
     lag_bins = int(round(offset / bin_size))
     spike_columns, other_columns = nwb_data.get_spike_and_other_columns()
-    data_index = deepcopy(nwb_data.data.index[:-2 * lag_bins])
+    data_index = deepcopy(nwb_data.data.index[:(-2 * lag_bins)])
     nwb_data.data[spike_columns] = nwb_data.data[spike_columns].shift(-lag_bins)
     nwb_data.data[other_columns] = nwb_data.data[other_columns].shift(lag_bins)
     nwb_data.data = nwb_data.data.dropna()

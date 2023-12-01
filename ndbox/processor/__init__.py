@@ -28,4 +28,4 @@ def run_processor(nwb_data, opt):
 
     opt = deepcopy(opt)
     processor_type = opt.pop('type')
-    PROCESSOR_REGISTRY.get(processor_type)(nwb_data, **opt)
+    PROCESSOR_REGISTRY.get(processor_type)(nwb_data=nwb_data, **opt)

@@ -25,19 +25,24 @@ class MLBaseModel:
         if not os.path.exists(path):
             raise FileNotFoundError(f"'{path}' File not found!")
         self.model = joblib.load(path)
-        self.logger.info(f"Loading {self.__class__.__name__} model from '{path}'.")
+        self.logger.info(f"Loading {self.__class__.__name__} model from {path}.")
 
     def save(self, path):
-        self.logger.info(f"Save {self.__class__.__name__} model in '{path}'.")
+        self.logger.info(f"Save {self.__class__.__name__} model in {path}.")
         joblib.dump(self.model, path)
 
-    def validation(self, x, y_true, metric_list):
+    def validation(self, x, y_true, metric_list, col=None, s_name=None):
         y_pred = self.predict(x)
+        if col is not None:
+            self.logger.info(f"Target columns: {str(col)}")
         metric_dict = {}
         for metric_name, metric_opt in metric_list.items():
             metric_value = calculate_metric(y_true, y_pred, metric_opt)
             metric_dict[metric_name] = metric_value
-            self.logger.info(f"Model {self.__class__.__name__} metric {metric_name}: {metric_value}")
+            name = self.__class__.__name__
+            if s_name is not None:
+                name = name + '_' + s_name
+            self.logger.info(f"Model {name} metric {metric_name}: {metric_value}")
         return metric_dict
 
     def get_params(self):

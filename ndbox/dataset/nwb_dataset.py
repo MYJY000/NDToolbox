@@ -36,6 +36,7 @@ class NWBDataset:
         self.behavior_list = behavior if behavior is not None else []
         self.spike_identifier = spike_identifier
         self.smooth_identifier = 'smooth#'
+        self.split_identifier = 'split#'
         self.skip_fields = skip_fields if skip_fields is not None else []
 
         self.data_dict, self.content_dict = self._build_data()
@@ -244,6 +245,12 @@ class NWBDataset:
         spike_columns = self.data.columns[spike_mask | smooth_mask]
         other_columns = self.data.columns[~(spike_mask | smooth_mask)]
         return spike_columns, other_columns
+
+    def get_data_startswith(self, identifier):
+        mask = self.data.columns.str.startswith(identifier)
+        columns = self.data.columns[mask]
+        data = self.data[columns].to_numpy()
+        return columns, data
 
     def drop_smooth_columns(self):
         drop_mask = self.data.columns.str.startswith(self.smooth_identifier)

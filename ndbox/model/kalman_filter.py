@@ -98,17 +98,23 @@ class KalmanFilterRegression:
         :param path: str. The path of models to be saved.
         """
 
+        self.logger.info(f"Save {self.__class__.__name__} model in {path}.")
         A, W, H, Q = self.model
         C = np.array([self.params['C']])
         np.savez(path, A=A, W=W, H=H, Q=Q, C=C)
 
-    def validation(self, x, y_true, metric_list):
+    def validation(self, x, y_true, metric_list, col=None, s_name=None):
         y_pred = self.predict(x, y_true)
+        if col is not None:
+            self.logger.info(f"Target columns: {str(col)}")
         metric_dict = {}
         for metric_name, metric_opt in metric_list.items():
             metric_value = calculate_metric(y_true, y_pred, metric_opt)
             metric_dict[metric_name] = metric_value
-            self.logger.info(f"Model {self.__class__.__name__} metric {metric_name}: {metric_value}")
+            name = self.__class__.__name__
+            if s_name is not None:
+                name = name + '_' + s_name
+            self.logger.info(f"Model {name} metric {metric_name}: {metric_value}")
         return metric_dict
 
     def get_params(self):
