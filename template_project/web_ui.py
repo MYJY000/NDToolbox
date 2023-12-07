@@ -132,68 +132,68 @@ def add_experiment(experiment_name):
             col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
             with col1:
                 r_list = ['resample', '-']
-                r_index = r_list.index(opt1[select_dataset].get('resample', {}).get('type', '-'))
+                r_index = r_list.index(opt1[select_dataset].get('1_resample', {}).get('type', '-'))
                 r_type = st.selectbox('resample', r_list, index=r_index)
                 if r_type and r_type != '-':
-                    if 'resample' not in opt1[select_dataset]:
-                        opt1[select_dataset]['resample'] = {}
-                    opt1[select_dataset]['resample']['type'] = r_type
+                    if '1_resample' not in opt1[select_dataset]:
+                        opt1[select_dataset]['1_resample'] = {}
+                    opt1[select_dataset]['1_resample']['type'] = r_type
                     param_dict = get_param_dict(PROCESSOR_REGISTRY, r_type, ignore=['nwb_data'])
                     for key, value in param_dict.items():
-                        default_value = opt1[select_dataset]['resample'].get(key, value)
+                        default_value = opt1[select_dataset]['1_resample'].get(key, value)
                         v = st.text_input(label=key, value=default_value)
-                        opt1[select_dataset]['resample'][key] = v
+                        opt1[select_dataset]['1_resample'][key] = v
                 else:
-                    if 'resample' in opt1[select_dataset]:
-                        opt1[select_dataset].pop('resample')
+                    if '1_resample' in opt1[select_dataset]:
+                        opt1[select_dataset].pop('1_resample')
             with col2:
                 sm_list = ['gaussian_smooth', '-']
-                sm_index = sm_list.index(opt1[select_dataset].get('smooth', {}).get('type', '-'))
+                sm_index = sm_list.index(opt1[select_dataset].get('2_smooth', {}).get('type', '-'))
                 sm_type = st.selectbox('smooth', sm_list, index=sm_index)
                 if sm_type and sm_type != '-':
-                    if 'smooth' not in opt1[select_dataset]:
-                        opt1[select_dataset]['smooth'] = {}
-                    opt1[select_dataset]['smooth']['type'] = sm_type
+                    if '2_smooth' not in opt1[select_dataset]:
+                        opt1[select_dataset]['2_smooth'] = {}
+                    opt1[select_dataset]['2_smooth']['type'] = sm_type
                     param_dict = get_param_dict(PROCESSOR_REGISTRY, sm_type, ignore=['nwb_data'])
                     for key, value in param_dict.items():
-                        default_value = opt1[select_dataset]['smooth'].get(key, value)
+                        default_value = opt1[select_dataset]['2_smooth'].get(key, value)
                         v = st.text_input(label=key, value=default_value)
-                        opt1[select_dataset]['smooth'][key] = v
+                        opt1[select_dataset]['2_smooth'][key] = v
                 else:
-                    if 'smooth' in opt1[select_dataset]:
-                        opt1[select_dataset].pop('smooth')
+                    if '2_smooth' in opt1[select_dataset]:
+                        opt1[select_dataset].pop('2_smooth')
             with col3:
                 l_list = ['lag_offset', '-']
-                l_index = l_list.index(opt1[select_dataset].get('lag', {}).get('type', '-'))
+                l_index = l_list.index(opt1[select_dataset].get('3_lag', {}).get('type', '-'))
                 l_type = st.selectbox('lag', l_list, index=l_index)
                 if l_type and l_type != '-':
-                    if 'lag' not in opt1[select_dataset]:
-                        opt1[select_dataset]['lag'] = {}
-                    opt1[select_dataset]['lag']['type'] = l_type
+                    if '3_lag' not in opt1[select_dataset]:
+                        opt1[select_dataset]['3_lag'] = {}
+                    opt1[select_dataset]['3_lag']['type'] = l_type
                     param_dict = get_param_dict(PROCESSOR_REGISTRY, l_type, ignore=['nwb_data'])
                     for key, value in param_dict.items():
-                        default_value = opt1[select_dataset]['lag'].get(key, value)
+                        default_value = opt1[select_dataset]['3_lag'].get(key, value)
                         v = st.text_input(label=key, value=default_value)
-                        opt1[select_dataset]['lag'][key] = v
+                        opt1[select_dataset]['3_lag'][key] = v
                 else:
-                    if 'lag' in opt1[select_dataset]:
-                        opt1[select_dataset].pop('lag')
+                    if '3_lag' in opt1[select_dataset]:
+                        opt1[select_dataset].pop('3_lag')
             with col4:
                 sp_list = ['train_test_bins_split', 'KFord_split', '-']
-                sp_index = sp_list.index(opt1[select_dataset].get('split', {}).get('type', '-'))
+                sp_index = sp_list.index(opt1[select_dataset].get('4_split', {}).get('type', '-'))
                 sp_type = st.selectbox('split', sp_list, index=sp_index)
                 if sp_type and sp_type != '-':
-                    if 'split' not in opt1[select_dataset]:
-                        opt1[select_dataset]['split'] = {}
-                    opt1[select_dataset]['split']['type'] = sp_type
+                    if '4_split' not in opt1[select_dataset]:
+                        opt1[select_dataset]['4_split'] = {}
+                    opt1[select_dataset]['4_split']['type'] = sp_type
                     param_dict = get_param_dict(PROCESSOR_REGISTRY, sp_type, ignore=['nwb_data'])
                     for key, value in param_dict.items():
-                        default_value = opt1[select_dataset]['split'].get(key, value)
+                        default_value = opt1[select_dataset]['4_split'].get(key, value)
                         v = st.text_input(label=key, value=default_value)
-                        opt1[select_dataset]['split'][key] = v
+                        opt1[select_dataset]['4_split'][key] = v
                 else:
-                    if 'split' in opt1[select_dataset]:
-                        opt1[select_dataset].pop('split')
+                    if '4_split' in opt1[select_dataset]:
+                        opt1[select_dataset].pop('4_split')
 
     with tab_model:
         model_list = list(MODEL_REGISTRY.keys()) + ['-']
