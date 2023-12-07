@@ -18,7 +18,7 @@ class KalmanFilterRegression:
         in the current update.
     """
 
-    def __init__(self, C=1, **kwargs):
+    def __init__(self, C: float = 1, **kwargs):
         self.logger = get_root_logger()
         self.params = {'C': C}
 

@@ -35,7 +35,7 @@ class WienerFilterClassification(MLBaseModel):
     :param C: Inverse of regularization strength; must be a positive float.
     """
 
-    def __init__(self, C=1, **kwargs):
+    def __init__(self, C: float = 1, **kwargs):
         super(WienerFilterClassification, self).__init__()
         self.params['C'] = C
 

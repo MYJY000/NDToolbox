@@ -22,7 +22,7 @@ class SupportVectorRegression(MLBaseModel):
         Penalty parameter of the error term.
     """
 
-    def __init__(self, max_iter=-1, C=3.0, **kwargs):
+    def __init__(self, max_iter: int = -1, C: float = 3.0, **kwargs):
         super(SupportVectorRegression, self).__init__()
         self.params['max_iter'] = max_iter
         self.params['C'] = C

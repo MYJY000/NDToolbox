@@ -12,7 +12,7 @@ def float_equal(num1, num2, eps=1e-10):
 
 
 @PROCESSOR_REGISTRY.register()
-def resample(nwb_data, target_bin, **kwargs):
+def resample(nwb_data, target_bin: float, **kwargs):
     nwb_data.logger.info(f"Resampling datasets to '{target_bin}' seconds.")
     if float_equal(target_bin, nwb_data.bin_size):
         return
@@ -54,7 +54,7 @@ def resample(nwb_data, target_bin, **kwargs):
 
 
 @PROCESSOR_REGISTRY.register()
-def lag_offset(nwb_data, offset, **kwargs):
+def lag_offset(nwb_data, offset: float, **kwargs):
     nwb_data.logger.info(f"Setting offset {offset} seconds.")
     nwb_data.data = nwb_data.data.dropna()
     bin_size = nwb_data.bin_size

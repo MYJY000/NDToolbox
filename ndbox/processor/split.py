@@ -10,8 +10,8 @@ VAL_MASK = 3
 
 
 @PROCESSOR_REGISTRY.register()
-def train_test_bins_split(nwb_data, train_size=None, test_size=None,
-                          shuffle=False, stratify_target=None, idx='', **kwargs):
+def train_test_bins_split(nwb_data, train_size: float | None = None, test_size: float | None = None,
+                          shuffle: bool = False, stratify_target: list | None = None, idx: str = '', **kwargs):
     nwb_data.logger.info(f"Train test bins split.")
     indices = np.arange(len(nwb_data.data))
     if stratify_target is not None:
@@ -38,7 +38,7 @@ def train_test_bins_split(nwb_data, train_size=None, test_size=None,
 
 
 @PROCESSOR_REGISTRY.register()
-def KFord_split(nwb_data, n_splits=5, shuffle=False, idx='kf', **kwargs):
+def KFord_split(nwb_data, n_splits: int = 5, shuffle: bool = False, idx: str = 'kf', **kwargs):
     nwb_data.logger.info(f"KFord split.")
     kf = KFold(n_splits=n_splits, shuffle=shuffle)
     indices = np.arange(len(nwb_data.data))

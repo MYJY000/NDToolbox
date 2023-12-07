@@ -48,7 +48,8 @@ experiment:
           idx: 0
         is_copy: False
     model:
-      type: LinearRegressionModel
+      type: WienerCascadeRegression
+      degree: 3
     train:
       dataset: SubIndy
       target: ['behavior/finger_vel']
@@ -84,10 +85,10 @@ experiment:
       C: 1
     train:
       dataset: SubMonk
-      target: [ 'behavior/cursor' ]
+      target: ['behavior/cursor']
     test:
       dataset: SubMonk
-      target: [ 'behavior/cursor' ]
+      target: ['behavior/cursor']
     metrics:
       R2:
         type: calculate_R2

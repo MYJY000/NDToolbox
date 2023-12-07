@@ -6,7 +6,7 @@ from ndbox.utils import PROCESSOR_REGISTRY
 
 
 @PROCESSOR_REGISTRY.register()
-def gaussian_smooth(nwb_data, gauss_width, ignore_nans=False, **kwargs):
+def gaussian_smooth(nwb_data, gauss_width: float, ignore_nans: bool = False, **kwargs):
     nwb_data.logger.info(f"Smoothing spikes with a {gauss_width} seconds Gaussian.")
 
     nwb_data.drop_smooth_columns()

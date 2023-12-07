@@ -4,7 +4,6 @@ import random
 import argparse
 import time
 from os import path
-from copy import deepcopy
 
 from ndbox.dataset import build_dataset
 from ndbox.processor import run_processor
@@ -145,7 +144,7 @@ def train_pipeline(x, y, save_path, model_opt, logger):
 def processor_pipeline(dataset, processor_opt):
     p_dataset = {}
     for dataset_name, dataset_opt in processor_opt.items():
-        is_copy = dataset_opt.get('is_copy', True)
+        is_copy = dataset_opt.get('is_copy', False)
         if is_copy:
             raise NotImplementedError
         else:

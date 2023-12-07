@@ -17,7 +17,7 @@ class WienerCascadeRegression(MLBaseModel):
         The degree of the polynomial used for the static nonlinear
     """
 
-    def __init__(self, degree=3, **kwargs):
+    def __init__(self, degree: int = 3, **kwargs):
         super(WienerCascadeRegression, self).__init__()
         self.params['degree'] = degree
 
