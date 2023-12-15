@@ -44,8 +44,40 @@ def create_classification_project(args):
 
 
 def create_analyzer_project(args):
-    pass
+    # 1. create analyzer project structure
+    project_path = path.join(args.path, args.name)
+    if path.exists(project_path):
+        raise FileExistsError(f"Project {project_path} already exists!")
+    os.makedirs(project_path)
+    dir_structure = {
+        'experiments': {},      # each experiment will be carried here
+        'analyze_info': {
+            'info.yml': None    # cache the basic info about the dataset
+        },
+        'main_ui.py': None,
+        'main.py': None
+    }
+    create_directory_and_files(project_path, dir_structure)
 
+    from ndbox import analyzer
+    ana_path = os.path.abspath(analyzer.__file__)
+    ana_path_list = ana_path.split(os.sep)
+
+    # 2. initialize the offline pipeline
+    pipeline_path = os.path.join(project_path, 'run_exp.py')
+    ana_path_list[-1] = analyzer.pipeline_path
+    analyzer_init(ana_path_list, pipeline_path)
+    # 3. initialize the ui pipeline
+    pipeline_ui_path = os.path.join(project_path, 'exp_config_ui.py')
+    ana_path_list[-1] = analyzer.pipeline_ui_path
+    analyzer_init(ana_path_list, pipeline_ui_path)
+
+def analyzer_init(src, desc):
+    src_path = os.sep.join(src)
+    with open(src_path, 'r') as sf:
+        src_content = sf.read()
+    with open(desc, 'w') as df:
+        df.write(src_content)
 
 def create_project_structure(project_path):
     if path.exists(project_path):

@@ -1,0 +1,16 @@
+dataset:
+  name: SubIndy
+  type: NWBDataset
+  path: D:\datasets\SpikeData\nwb_sample\sub-Indy_desc-train_behavior+ecephys.nwb
+
+experiment:
+  type: plot_instant_freq
+  target: [1, 2, 3, 5, 7, 8, 11, 12]
+  params_data:
+    t_start: 20
+    t_stop: 60
+  params_plot:
+    color: '#232323'
+
+
+

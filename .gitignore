@@ -4,5 +4,6 @@ __pycache__/
 .pytest_cache/
 test_*/
 *.egg-info
-
+result/
+*.log
 *.nwb

@@ -1,5 +1,7 @@
 import datetime
 import os
+import sys
+sys.path.append("../")
 import random
 import argparse
 import time
