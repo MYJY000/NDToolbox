@@ -5,7 +5,7 @@ dataset:
   SubIndy:
     name: SubIndy
     type: NWBDataset
-    path: /Users/yjy/Desktop/nd/NDToolbox/datasets/sub_indy/sub-Indy_desc-train_behavior+ecephys.nwb
+    path: D:\datasets\SpikeData\nwb_sample\sub-Indy_desc-train_behavior+ecephys.nwb
     units:
       field: units        # the units field name in nwb file.
       bin_size: 0.001     # bin size, unit is seconds.
@@ -15,16 +15,16 @@ dataset:
       stop: stop_time     # the column name of trial stop time.
     behavior: ['behavior/cursor_pos', 'behavior/finger_pos', 'behavior/finger_vel', 'behavior/target_pos']
     skip_fields: None
-
-  SubMonk:
-    name: SubMonk
-    type: NWBDataset
-    path: /Users/yjy/Desktop/nd/NDToolbox/datasets/sub-monk-g.nwb
-    units:
-      field: behavior/spike_counts
-    trials:
-      field: trials
-    behavior: ['behavior/cursor']
+#
+#  SubMonk:
+#    name: SubMonk
+#    type: NWBDataset
+#    path: /Users/yjy/Desktop/nd/NDToolbox/datasets/sub-monk-g.nwb
+#    units:
+#      field: behavior/spike_counts
+#    trials:
+#      field: trials
+#    behavior: ['behavior/cursor']
 
 
 experiment:
@@ -61,36 +61,36 @@ experiment:
         type: calculate_R2
       CC:
         type: calculate_cc
-
-  exp_2:
-    processor: # The order in the config file is the order in the program executes the processor
-      SubMonk:
-        resample:
-          type: resample
-          target_bin: 0.1
-        smooth:
-          type: gaussian_smooth
-          gauss_width: 0.5  # the standard deviation of the Gaussian to use for smoothing, in seconds
-          ignore_nans: False
-        lag:
-          type: lag_offset
-          offset: 0.1       # The behavior data lagged behind neural data by 0.1 seconds.
-        split:
-          type: KFord_split
-          n_splits: 3
-          shuffle: False
-        is_copy: False
-    model:
-      type: KalmanFilterRegression
-      C: 1
-    train:
-      dataset: SubMonk
-      target: ['behavior/cursor']
-    test:
-      dataset: SubMonk
-      target: ['behavior/cursor']
-    metrics:
-      R2:
-        type: calculate_R2
-      CC:
-        type: calculate_cc
+#
+#  exp_2:
+#    processor: # The order in the config file is the order in the program executes the processor
+#      SubMonk:
+#        resample:
+#          type: resample
+#          target_bin: 0.1
+#        smooth:
+#          type: gaussian_smooth
+#          gauss_width: 0.5  # the standard deviation of the Gaussian to use for smoothing, in seconds
+#          ignore_nans: False
+#        lag:
+#          type: lag_offset
+#          offset: 0.1       # The behavior data lagged behind neural data by 0.1 seconds.
+#        split:
+#          type: KFord_split
+#          n_splits: 3
+#          shuffle: False
+#        is_copy: False
+#    model:
+#      type: KalmanFilterRegression
+#      C: 1
+#    train:
+#      dataset: SubMonk
+#      target: ['behavior/cursor']
+#    test:
+#      dataset: SubMonk
+#      target: ['behavior/cursor']
+#    metrics:
+#      R2:
+#        type: calculate_R2
+#      CC:
+#        type: calculate_cc

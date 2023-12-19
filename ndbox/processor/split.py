@@ -10,8 +10,8 @@ VAL_MASK = 3
 
 
 @PROCESSOR_REGISTRY.register()
-def train_test_bins_split(nwb_data, train_size: float | None = None, test_size: float | None = None,
-                          shuffle: bool = False, stratify_target: list | None = None, idx: str = '', **kwargs):
+def train_test_bins_split(nwb_data, train_size: float = None, test_size: float = None,
+                          shuffle: bool = False, stratify_target: list = None, idx: str = '', **kwargs):
     nwb_data.logger.info(f"Train test bins split.")
     indices = np.arange(len(nwb_data.data))
     if stratify_target is not None:

@@ -1,5 +1,7 @@
 import inspect
 import os
+import sys
+sys.path.append("../")
 import yaml
 import streamlit as st
 from copy import deepcopy
