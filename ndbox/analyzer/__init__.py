@@ -7,6 +7,7 @@ from .rta import *
 pipeline_path = 'pipeline'
 pipeline_ui_path = 'pipeline_ui'
 
+
 def run_analyze(nwb_data, opt):
     """
     Build analyze from options.

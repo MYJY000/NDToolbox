@@ -64,13 +64,14 @@ def create_analyzer_project(args):
     ana_path_list = ana_path.split(os.sep)
 
     # 2. initialize the offline pipeline
-    pipeline_path = os.path.join(project_path, 'run_exp.py')
+    pipeline_path = path.join(project_path, 'run_exp.py')
     ana_path_list[-1] = analyzer.pipeline_path
     analyzer_init(ana_path_list, pipeline_path)
     # 3. initialize the ui pipeline
-    pipeline_ui_path = os.path.join(project_path, 'build_exp.py')
+    pipeline_ui_path = path.join(project_path, 'build_exp.py')
     ana_path_list[-1] = analyzer.pipeline_ui_path
     analyzer_init(ana_path_list, pipeline_ui_path)
+
 
 def analyzer_init(src, desc):
     src_path = os.sep.join(src)
@@ -78,6 +79,7 @@ def analyzer_init(src, desc):
         src_content = sf.read()
     with open(desc, 'w') as df:
         df.write(src_content)
+
 
 def create_project_structure(project_path):
     if path.exists(project_path):
