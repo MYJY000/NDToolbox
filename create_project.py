@@ -68,7 +68,7 @@ def create_analyzer_project(args):
     ana_path_list[-1] = analyzer.pipeline_path
     analyzer_init(ana_path_list, pipeline_path)
     # 3. initialize the ui pipeline
-    pipeline_ui_path = os.path.join(project_path, 'exp_config_ui.py')
+    pipeline_ui_path = os.path.join(project_path, 'build_exp.py')
     ana_path_list[-1] = analyzer.pipeline_ui_path
     analyzer_init(ana_path_list, pipeline_ui_path)
 
