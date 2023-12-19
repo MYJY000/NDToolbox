@@ -1,6 +1,5 @@
 import os
 import yaml
-import argparse
 import random
 import numpy as np
 from collections import OrderedDict
@@ -58,6 +57,16 @@ def opt2str(opt, indent_level=1):
         else:
             msg += ' ' * (indent_level * 2) + k + ': ' + str(v) + '\n'
     return msg
+
+
+def dict2yaml(ordered_dict):
+    yaml_string = yaml.dump(ordered_dict, Dumper=ordered_yaml()[1])
+    return yaml_string
+
+
+def yaml2dict(yaml_string):
+    ordered_dict = yaml.load(yaml_string, Loader=ordered_yaml()[0])
+    return ordered_dict
 
 
 def _postprocess_yml_value(value):

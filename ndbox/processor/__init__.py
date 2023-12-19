@@ -3,7 +3,7 @@ from copy import deepcopy
 from ndbox.utils import PROCESSOR_REGISTRY
 from .resample import resample, lag_offset
 from .smooth import gaussian_smooth
-from .split import train_test_split
+from .split import train_test_split, TRAIN_MASK, TEST_MASK, VAL_MASK
 
 __all__ = [
     'run_processor',
@@ -14,6 +14,7 @@ __all__ = [
     'gaussian_smooth',
     # split.py
     'train_test_split',
+    'TRAIN_MASK', 'TEST_MASK', 'VAL_MASK',
 ]
 
 

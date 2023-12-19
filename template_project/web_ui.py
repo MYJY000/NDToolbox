@@ -6,18 +6,7 @@ from copy import deepcopy
 from collections import OrderedDict
 
 from ndbox.dataset import NWBDataset
-from ndbox.utils import PROCESSOR_REGISTRY, MODEL_REGISTRY, METRIC_REGISTRY
-from ndbox.utils.options import ordered_yaml
-
-
-def dict2yaml(ordered_dict):
-    yaml_string = yaml.dump(ordered_dict, Dumper=ordered_yaml()[1])
-    return yaml_string
-
-
-def yaml2dict(yaml_string):
-    ordered_dict = yaml.load(yaml_string, Loader=ordered_yaml()[0])
-    return ordered_dict
+from ndbox.utils import PROCESSOR_REGISTRY, MODEL_REGISTRY, METRIC_REGISTRY, dict2yaml
 
 
 def general_setting():

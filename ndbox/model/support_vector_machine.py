@@ -2,7 +2,7 @@ import os
 
 import joblib
 import numpy as np
-from sklearn.svm import SVR
+from sklearn.svm import SVR, SVC
 from tqdm import trange
 
 from ndbox.utils import files_form_folder, MODEL_REGISTRY
@@ -68,3 +68,8 @@ class SupportVectorRegression(MLBaseModel):
             os.makedirs(path)
         for filename, model in self.model.items():
             joblib.dump(model, os.path.join(path, filename + '.pkl'))
+
+
+@MODEL_REGISTRY.register()
+class SupportVectorClassification(MLBaseModel):
+    pass

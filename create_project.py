@@ -55,6 +55,7 @@ def create_project_structure(project_path):
         'user_define_modules': {
             '__init__.py': None
         },
+        'temp_files': {},
         'config.yml': None,
         'web_ui.py': None,
         'result_report.py': None,

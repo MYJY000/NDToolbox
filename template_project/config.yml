@@ -46,7 +46,7 @@ experiment:
           test_size: 0.3
           shuffle: False
           idx: 0
-        is_copy: False
+        is_copy: True
     model:
       type: WienerCascadeRegression
       degree: 3

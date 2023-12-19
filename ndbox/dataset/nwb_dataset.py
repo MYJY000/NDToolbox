@@ -2,10 +2,11 @@ import os
 import numpy as np
 import pandas as pd
 from copy import deepcopy
+from collections import OrderedDict
 from pynwb import NWBHDF5IO, TimeSeries
 from pynwb.core import MultiContainerInterface, DynamicTable
 
-from ndbox.utils import get_root_logger, DATASET_REGISTRY
+from ndbox.utils import get_root_logger, DATASET_REGISTRY, dict2yaml, yaml2dict
 
 
 @DATASET_REGISTRY.register()
@@ -15,7 +16,7 @@ class NWBDataset:
     """
 
     def __init__(self, path, name='NWBDataset', units=None, trials=None, behavior=None,
-                 spike_identifier='spike#', skip_fields=None, **kwargs):
+                 spike_identifier='spike#', skip_fields=None, image_path=None, **kwargs):
         """
         Initializes an NWBDataset, loading datasets from
         the indicated file(s).
@@ -42,12 +43,18 @@ class NWBDataset:
         self.data_dict, self.content_dict = self._build_data()
         self.logger.info(f"{self.content_repr(self.content_dict)}")
         self.logger.info(f"{self.data_info()}")
+
         self.spike_train = None
         self.bin_size = 0.001
         self.data = None
         self.trials = None
         self.behavior_columns = {}
-        self._load_data()
+        self.image = {}
+
+        if image_path is not None:
+            self.restore_image(image_path)
+        else:
+            self._load_data()
 
     def _build_data(self):
         io = NWBHDF5IO(self.filename, 'r')
@@ -257,3 +264,49 @@ class NWBDataset:
         drop_columns = self.data.columns[drop_mask]
         if len(drop_columns) > 0:
             self.data.drop(drop_columns, axis=1, inplace=True)
+
+    def save_image(self, path=None):
+        if path is None:
+            self.image['spike_train'] = deepcopy(self.spike_train)
+            self.image['bin_size'] = deepcopy(self.bin_size)
+            self.image['data'] = deepcopy(self.data)
+            self.image['trials'] = deepcopy(self.trials)
+            self.image['behavior_columns'] = deepcopy(self.behavior_columns)
+        else:
+            spike_train_path = os.path.join(path, 'spike_train.npy')
+            bin_size_path = os.path.join(path, 'bin_size.txt')
+            data_path = os.path.join(path, 'data.csv')
+            trials_path = os.path.join(path, 'trials.csv')
+            behavior_columns_path = os.path.join(path, 'behavior_columns.yml')
+            np.save(spike_train_path, self.spike_train)
+            with open(bin_size_path, 'w', encoding='utf-8') as f:
+                f.write(str(self.bin_size))
+                f.close()
+            self.data.to_csv(data_path)
+            self.trials.to_csv(trials_path)
+            with open(behavior_columns_path, 'w', encoding='utf-8') as f:
+                f.write(dict2yaml(OrderedDict(self.behavior_columns)))
+                f.close()
+
+    def restore_image(self, path=None):
+        if path is None:
+            self.spike_train = self.image['spike_train']
+            self.bin_size = self.image['bin_size']
+            self.data = self.image['data']
+            self.trials = self.image['trials']
+            self.behavior_columns = self.image['behavior_columns']
+        else:
+            spike_train_path = os.path.join(path, 'spike_train.npy')
+            bin_size_path = os.path.join(path, 'bin_size.txt')
+            data_path = os.path.join(path, 'data.csv')
+            trials_path = os.path.join(path, 'trials.csv')
+            behavior_columns_path = os.path.join(path, 'behavior_columns.yml')
+            self.spike_train = np.load(spike_train_path, allow_pickle=True)
+            with open(bin_size_path, 'r', encoding='utf-8') as f:
+                self.bin_size = float(f.read())
+                f.close()
+            self.data = pd.read_csv(data_path, index_col=0, header=0)
+            self.trials = pd.read_csv(trials_path, header=0)
+            with open(behavior_columns_path, 'r', encoding='utf-8') as f:
+                self.behavior_columns = dict(yaml2dict(str(f.read())))
+                f.close()
