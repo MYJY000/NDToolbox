@@ -281,12 +281,10 @@ class NWBDataset:
             np.save(spike_train_path, self.spike_train)
             with open(bin_size_path, 'w', encoding='utf-8') as f:
                 f.write(str(self.bin_size))
-                f.close()
             self.data.to_csv(data_path)
             self.trials.to_csv(trials_path)
             with open(behavior_columns_path, 'w', encoding='utf-8') as f:
                 f.write(dict2yaml(OrderedDict(self.behavior_columns)))
-                f.close()
 
     def restore_image(self, path=None):
         if path is None:
@@ -304,9 +302,7 @@ class NWBDataset:
             self.spike_train = np.load(spike_train_path, allow_pickle=True)
             with open(bin_size_path, 'r', encoding='utf-8') as f:
                 self.bin_size = float(f.read())
-                f.close()
             self.data = pd.read_csv(data_path, index_col=0, header=0)
             self.trials = pd.read_csv(trials_path, header=0)
             with open(behavior_columns_path, 'r', encoding='utf-8') as f:
                 self.behavior_columns = dict(yaml2dict(str(f.read())))
-                f.close()

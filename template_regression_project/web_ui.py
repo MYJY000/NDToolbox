@@ -309,7 +309,6 @@ def web_ui():
         config_path = os.path.join(root_path, export_file)
         with open(config_path, 'w', encoding='utf-8') as f:
             f.write(config_str)
-            f.close()
             st.sidebar.success('Export Success')
 
 

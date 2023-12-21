@@ -72,4 +72,27 @@ class SupportVectorRegression(MLBaseModel):
 
 @MODEL_REGISTRY.register()
 class SupportVectorClassification(MLBaseModel):
-    pass
+    """
+    Class for the Support Vector Classification Decoder
+    This simply leverages the scikit-learn SVM.
+
+    :param max_iter: integer, default=-1
+        the maximum number of iterations to run (to save time)
+        max_iter=-1 means no limit.
+    :param C: float, default=3.0
+        Penalty parameter of the error term.
+    """
+
+    def __init__(self, max_iter: int = -1, C: float = 3.0, **kwargs):
+        super(SupportVectorClassification, self).__init__()
+        self.params['max_iter'] = max_iter
+        self.params['C'] = C
+
+    def fit(self, x, y):
+        model = SVC(C=self.params['C'], max_iter=self.params['max_iter'])
+        model.fit(x, y)
+        self.model = model
+
+    def predict(self, x):
+        y_pred = self.model.predict(x)
+        return y_pred

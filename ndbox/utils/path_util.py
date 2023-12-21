@@ -28,3 +28,10 @@ def create_directory_and_files(root_path, dir_structure):
         else:
             os.makedirs(sub_path)
             create_directory_and_files(sub_path, sub)
+
+
+def file2file(src_path, dest_path):
+    with open(src_path, 'r', encoding='utf-8') as f:
+        src_content = f.read()
+    with open(dest_path, 'w', encoding='utf-8') as f:
+        f.write(src_content)
