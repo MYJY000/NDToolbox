@@ -4,6 +4,7 @@ import random
 import argparse
 import time
 from os import path
+import pandas as pd
 
 from ndbox.dataset import build_dataset
 from ndbox.processor import run_processor, TRAIN_MASK, TEST_MASK
@@ -26,7 +27,7 @@ def parse_options(root_path):
     opt['path'] = {}
     name = opt.get('name', 'result')
     temp_path = path.join(root_path, 'temp_files')
-    result_path = path.join(root_path, f'{name}_{int(time.time())}')
+    result_path = path.join(root_path, 'results', f'{name}_{int(time.time())}')
     log_path = path.join(result_path, 'log.txt')
 
     opt['path']['root'] = root_path
@@ -53,7 +54,7 @@ def run_pipeline(root_path):
     for dataset_name, dataset_opt in opt.get('dataset', {}).items():
         dataset[dataset_name] = build_dataset(opt=dataset_opt)
 
-    result_path = opt['path']['result']
+    result_path = str(opt['path']['result'])
     temp_path = opt['path']['temp']
     for exp_name, exp_opt in opt.get('experiment', {}).items():
         exp_path = path.join(result_path, exp_name)
@@ -107,28 +108,43 @@ def run_pipeline(root_path):
             test_y_col, test_y = test_data.get_behavior_array(test_target_list)
             split_col, split_data = test_data.get_data_startswith(test_data.split_identifier)
             label = {'col': test_y_col, 'name': split_col}
+            metrics_result = None
             if len(split_col) == 0:
-                test_pipeline(test_x, test_y, model_list, metric_list)
+                metrics_result = test_pipeline(test_x, test_y, model_list, metric_list, label)
             elif len(split_col) == len(model_list):
-                test_pipeline(test_x, test_y, model_list, metric_list, label, split_data)
+                metrics_result = test_pipeline(test_x, test_y, model_list, metric_list, label, split_data)
+            else:
+                pass
+            if metrics_result is not None:
+                export_metric = []
+                df_index = []
+                df_col = test_y_col
+                for model_name, metric_result in metrics_result.items():
+                    df_index.append(model_name)
+                    zip_data = zip(*metric_result.values())
+                    row_data = [list(col) for col in zip_data]
+                    export_metric.append(row_data)
+                df = pd.DataFrame(export_metric, columns=df_col, index=df_index)
+                metric_save_path = path.join(exp_path, 'metric.csv')
+                df.to_csv(metric_save_path)
 
         for dataset_name, image_path in copy_dataset.items():
             dataset[dataset_name].restore_image(image_path)
         logger.info(f'End experiment {exp_name}.')
 
 
-def test_pipeline(test_x, test_y, model_list, metric_list, label=None, mask=None):
-    metric_result = []
+def test_pipeline(test_x, test_y, model_list, metric_list, label, mask=None):
+    metrics_result = {}
     for idx, model in enumerate(model_list):
         if mask is not None:
-            result = model.validation(
+            name, result = model.validation(
                 test_x[mask[:, idx] == TEST_MASK], test_y[mask[:, idx] == TEST_MASK],
                 metric_list, label['col'], label['name'][idx]
             )
         else:
-            result = model.validation(test_x, test_y, metric_list)
-        metric_result.append(result)
-    return metric_result
+            name, result = model.validation(test_x, test_y, metric_list, label['col'])
+        metrics_result[name] = result
+    return metrics_result
 
 
 def train_pipeline(x, y, save_path, model_opt, logger):

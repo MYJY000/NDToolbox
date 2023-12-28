@@ -37,6 +37,7 @@ def create_regression_project(args):
     project_path, user_define_path = create_project_structure(path.join(args.path, args.name))
     regression_pipeline_init(project_path)
     regression_web_ui_init(project_path)
+    regression_result_report_init(project_path)
 
 
 def create_classification_project(args):
@@ -90,6 +91,7 @@ def create_project_structure(project_path):
             '__init__.py': None
         },
         'temp_files': {},
+        'results': {},
         'config.yml': None,
         'web_ui.py': None,
         'result_report.py': None,
@@ -115,6 +117,12 @@ def regression_pipeline_init(project_path):
 def regression_web_ui_init(project_path):
     src_filepath = path.join(root, 'project_init_files', 'regression', 'web_ui')
     filepath = path.join(project_path, 'web_ui.py')
+    file2file(src_filepath, filepath)
+
+
+def regression_result_report_init(project_path):
+    src_filepath = path.join(root, 'project_init_files', 'regression', 'result_report')
+    filepath = path.join(project_path, 'result_report.py')
     file2file(src_filepath, filepath)
 
 

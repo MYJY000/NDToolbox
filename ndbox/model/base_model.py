@@ -36,14 +36,14 @@ class MLBaseModel:
         if col is not None:
             self.logger.info(f"Target columns: {str(col)}")
         metric_dict = {}
+        name = self.__class__.__name__
         for metric_name, metric_opt in metric_list.items():
             metric_value = calculate_metric(y_true, y_pred, metric_opt)
             metric_dict[metric_name] = metric_value
-            name = self.__class__.__name__
             if s_name is not None:
                 name = name + '_' + s_name
             self.logger.info(f"Model {name} metric {metric_name}: {metric_value}")
-        return metric_dict
+        return name, metric_dict
 
     def get_params(self):
         return self.params

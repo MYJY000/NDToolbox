@@ -7,19 +7,19 @@ class Registry:
     users' custom modules.
 
     To create a registry (e.g. a backbone registry):
-    .. code-block:: python
+    . code-block:: python
 
         BACKBONE_REGISTRY = Registry('BACKBONE')
 
     To register an object:
-    .. code-block:: python
+    . code-block:: python
 
         @BACKBONE_REGISTRY.register()
         class MyBackbone():
             ...
 
     Or:
-    .. code-block:: python
+    . code-block:: python
 
         BACKBONE_REGISTRY.register(MyBackbone)
     """
