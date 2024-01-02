@@ -52,34 +52,35 @@ def create_analyzer_project(args):
     os.makedirs(project_path)
     dir_structure = {
         'experiments': {},      # each experiment will be carried here
-        'analyze_info': {
-            'info.yml': None    # cache the basic info about the dataset
+        'build_exp': {
+            'cache.yml': None,    # cache the basic info about the dataset
+            'app.py': None,
+            'create_exp.py': None,
+            'dataset_loader.py': None,
+            'execute.py': None,
+            'history.py': None
         },
-        'main_ui.py': None,
-        'main.py': None
+        'run_exp.py': None
     }
-    create_directory_and_files(project_path, dir_structure)
-
-    from ndbox import analyzer
-    ana_path = os.path.abspath(analyzer.__file__)
-    ana_path_list = ana_path.split(os.sep)
-
-    # 2. initialize the offline pipeline
-    pipeline_path = path.join(project_path, 'run_exp.py')
-    ana_path_list[-1] = analyzer.pipeline_path
-    analyzer_init(ana_path_list, pipeline_path)
-    # 3. initialize the ui pipeline
-    pipeline_ui_path = path.join(project_path, 'build_exp.py')
-    ana_path_list[-1] = analyzer.pipeline_ui_path
-    analyzer_init(ana_path_list, pipeline_ui_path)
+    analyzer_init_root = path.join('./project_init_files', 'analyzer', 'tmp')
+    ana_path_list = analyzer_init_root.split(os.sep)
+    analyzer_init(ana_path_list, project_path, dir_structure)
 
 
-def analyzer_init(src, desc):
-    src_path = os.sep.join(src)
-    with open(src_path, 'r') as sf:
-        src_content = sf.read()
-    with open(desc, 'w') as df:
-        df.write(src_content)
+def analyzer_init(ana_path_list, root_path, dir_structure):
+    for name, sub in dir_structure.items():
+        sub_path = os.path.join(root_path, name)
+        if sub is None:
+            fln, flp = name.split('.')
+            if flp != 'py':
+                open(sub_path, 'w', encoding='utf-8').close()
+            else:
+                ana_path_list[-1] = fln
+                src_path = os.sep.join(ana_path_list)
+                file2file(src_path, sub_path)
+        else:
+            os.makedirs(sub_path)
+            analyzer_init(ana_path_list, sub_path, sub)
 
 
 def create_project_structure(project_path):

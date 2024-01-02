@@ -4,9 +4,7 @@ from .analysis import *
 from .mua import *
 from .sua import *
 from .rta import *
-pipeline_path = 'pipeline'
-pipeline_ui_path = 'pipeline_ui'
-
+from .era import *
 
 def run_analyze(nwb_data, opt):
     """
@@ -16,9 +14,7 @@ def run_analyze(nwb_data, opt):
     :param opt: dict. Configuration. It must contain:
         type - str. Metric type.
     """
-
     opt = deepcopy(opt)
-    experiment = opt.get('experiment')
-    analyze_type = experiment.get('type')
+    analyze_type = opt.get('type')
     result = ANALYZER_REGISTRY.get(analyze_type)(nwb_data, **opt)
     return result

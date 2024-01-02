@@ -1,11 +1,8 @@
-# 用于运行离线的分析, 运行粒度为实验
-# 在使用 build_exp 选取参数生成实验的 config.yml 后, 可以使用该脚本运行实验
-# 例如假设新建了一个实验叫做: exp_sua_1, 那么只需在工程根目录下运行命令行
-# python exp_run.py -e exp_sua_1
 import argparse
 import os
 import sys
 sys.path.append("../")
+sys.path.append("../../")
 from ndbox.dataset import build_dataset
 from ndbox.analyzer import run_analyze
 from ndbox.utils import yaml_load, get_root_logger, opt2str
@@ -31,9 +28,11 @@ def analyze_file_handler(exp_name: str):
 
 def run():
     # 1. 解析命令行参数
+    current_file_path = os.path.abspath(__file__)
+    current_file_dir = os.sep.join(current_file_path.split(os.sep)[:-1])
     opt = {
-        'root': os.getcwd(),
-        'exp_root': os.path.join(os.getcwd(), 'experiments'),
+        'root': current_file_dir,
+        'exp_root': os.path.join(current_file_dir, 'experiments'),
         'logger_name': 'analyzer'
     }
     parse_opt(opt)
@@ -65,6 +64,7 @@ def run():
             logger.removeHandler(exp_log_file_hd)
             continue
         logger.info(f"Load {exp}'s configuration success!")
+        logger.info(opt2str(opt))
 
         dataset_opt = exp_opt.get('dataset', None)
         if dataset_opt is None:
@@ -73,21 +73,14 @@ def run():
             continue
         dataset = build_dataset(dataset_opt)
 
-        experiment_opt = {'experiment': exp_opt.get('experiment', None)}
-        if experiment_opt['experiment'] is None:
+        experiment_opt = exp_opt.get('experiment', None)
+        if experiment_opt is None:
             logger.warning(f"No experiment configuration found in {exp}'s configuration")
             logger.removeHandler(exp_log_file_hd)
             continue
         experiment_opt['root'] = exp_root_path
         experiment_opt['logger_name'] = opt['logger_name']
-        logger.info("Prepare to run the experiment")
-        logger.info(opt2str(experiment_opt))
         run_analyze(dataset, experiment_opt)
         logger.removeHandler(exp_log_file_hd)
 
-
-if __name__ == '__main__':
-    run()
-
-
-
+run()

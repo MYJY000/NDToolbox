@@ -1,5 +1,8 @@
 import argparse
 import os
+import sys
+sys.path.append("../")
+sys.path.append("../../")
 from ndbox.dataset import build_dataset
 from ndbox.analyzer import run_analyze
 from ndbox.utils import yaml_load, get_root_logger, opt2str
@@ -25,9 +28,11 @@ def analyze_file_handler(exp_name: str):
 
 def run():
     # 1. 解析命令行参数
+    current_file_path = os.path.abspath(__file__)
+    current_file_dir = os.sep.join(current_file_path.split(os.sep)[:-1])
     opt = {
-        'root': os.getcwd(),
-        'exp_root': os.path.join(os.getcwd(), 'experiments'),
+        'root': current_file_dir,
+        'exp_root': os.path.join(current_file_dir, 'experiments'),
         'logger_name': 'analyzer'
     }
     parse_opt(opt)
