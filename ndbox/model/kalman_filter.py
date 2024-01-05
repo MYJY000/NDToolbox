@@ -2,12 +2,12 @@ import os
 import numpy as np
 from numpy.linalg import inv
 
-from ndbox.utils import get_root_logger, MODEL_REGISTRY
-from ndbox.metric import calculate_metric
+from .base_model import MLBaseModel
+from ndbox.utils import MODEL_REGISTRY
 
 
 @MODEL_REGISTRY.register()
-class KalmanFilterRegression:
+class KalmanFilterRegression(MLBaseModel):
     """
     Class for the Kalman Filter Decoder.
 
@@ -19,8 +19,8 @@ class KalmanFilterRegression:
     """
 
     def __init__(self, C: float = 1, **kwargs):
-        self.logger = get_root_logger()
-        self.params = {'C': C}
+        super(KalmanFilterRegression, self).__init__()
+        self.params['C'] = C
 
     def fit(self, x, y):
         """
@@ -42,22 +42,21 @@ class KalmanFilterRegression:
         H = Z * _X.T * (inv(_X * _X.T))
         Q = ((Z - H * _X) * (Z - H * _X).T) / nt
         params = [A, W, H, Q]
+        self._X = _X
         self.model = params
 
-    def predict(self, x, y_true):
+    def predict(self, x):
         """
         Predict outcomes using trained Kalman Filter Decoder.
 
         :param x: numpy 2d array of shape [n_samples(i.e. bins), n_neurons]
             This is the neural datasets in Kalman filter format.
-        :param y_true: numpy 2d array of shape [n_samples(i.e. bins), n_outputs]
-            The actual outputs.
         :return: numpy 2d array of shape [n_samples(i.e. bins), n_outputs]
             The predicted outputs.
         """
 
         A, W, H, Q = self.model
-        _X = np.matrix(y_true.T)
+        _X = self._X
         Z = np.matrix(x.T)
         num_states = _X.shape[0]
         states = np.empty(_X.shape)
@@ -102,20 +101,3 @@ class KalmanFilterRegression:
         A, W, H, Q = self.model
         C = np.array([self.params['C']])
         np.savez(path, A=A, W=W, H=H, Q=Q, C=C)
-
-    def validation(self, x, y_true, metric_list, col=None, s_name=None):
-        y_pred = self.predict(x, y_true)
-        if col is not None:
-            self.logger.info(f"Target columns: {str(col)}")
-        metric_dict = {}
-        name = self.__class__.__name__
-        for metric_name, metric_opt in metric_list.items():
-            metric_value = calculate_metric(y_true, y_pred, metric_opt)
-            metric_dict[metric_name] = metric_value
-            if s_name is not None:
-                name = name + '_' + s_name
-            self.logger.info(f"Model {name} metric {metric_name}: {metric_value}")
-        return name, metric_dict
-
-    def get_params(self):
-        return self.params

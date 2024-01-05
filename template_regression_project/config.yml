@@ -46,7 +46,6 @@ experiment:
           test_size: 0.3
           shuffle: False
           idx: 0
-        is_copy: True
     model:
       type: WienerCascadeRegression
       degree: 3
@@ -79,7 +78,6 @@ experiment:
           type: KFord_split
           n_splits: 3
           shuffle: False
-        is_copy: False
     model:
       type: KalmanFilterRegression
       C: 1

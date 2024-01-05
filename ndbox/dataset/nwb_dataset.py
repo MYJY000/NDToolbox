@@ -41,8 +41,6 @@ class NWBDataset:
         self.skip_fields = skip_fields if skip_fields is not None else []
 
         self.data_dict, self.content_dict = self._build_data()
-        self.logger.info(f"{self.content_repr(self.content_dict)}")
-        self.logger.info(f"{self.data_info()}")
 
         self.spike_train = None
         self.bin_size = 0.001
@@ -54,6 +52,8 @@ class NWBDataset:
         if image_path is not None:
             self.restore_image(image_path)
         else:
+            self.logger.info(f"{self.content_repr(self.content_dict)}")
+            self.logger.info(f"{self.data_info()}")
             self._load_data()
 
     def _build_data(self):
@@ -285,6 +285,7 @@ class NWBDataset:
             self.trials.to_csv(trials_path)
             with open(behavior_columns_path, 'w', encoding='utf-8') as f:
                 f.write(dict2yaml(OrderedDict(self.behavior_columns)))
+            self.logger.info(f"Saving image to {path}")
 
     def restore_image(self, path=None):
         if path is None:
@@ -306,3 +307,4 @@ class NWBDataset:
             self.trials = pd.read_csv(trials_path, header=0)
             with open(behavior_columns_path, 'r', encoding='utf-8') as f:
                 self.behavior_columns = dict(yaml2dict(str(f.read())))
+            self.logger.info(f"Load image from {path}")

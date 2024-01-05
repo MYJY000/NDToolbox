@@ -2,7 +2,7 @@ import os
 import joblib
 
 from ndbox.utils import get_root_logger
-from ndbox.metric import calculate_metric
+from ndbox.metric import build_metric
 
 
 class MLBaseModel:
@@ -12,6 +12,7 @@ class MLBaseModel:
 
     def __init__(self, **kwargs):
         self.logger = get_root_logger()
+        self.name = self.__class__.__name__
         self.params = {}
         self.model = None
 
@@ -31,19 +32,16 @@ class MLBaseModel:
         self.logger.info(f"Save {self.__class__.__name__} model in {path}.")
         joblib.dump(self.model, path)
 
-    def validation(self, x, y_true, metric_list, col=None, s_name=None):
+    def validation(self, x, y_true, metric_list):
         y_pred = self.predict(x)
-        if col is not None:
-            self.logger.info(f"Target columns: {str(col)}")
-        metric_dict = {}
-        name = self.__class__.__name__
-        for metric_name, metric_opt in metric_list.items():
-            metric_value = calculate_metric(y_true, y_pred, metric_opt)
-            metric_dict[metric_name] = metric_value
-            if s_name is not None:
-                name = name + '_' + s_name
-            self.logger.info(f"Model {name} metric {metric_name}: {metric_value}")
-        return name, metric_dict
+        metric_dict = build_metric(y_true, y_pred, metric_list)
+        self.logger.info(f"Model {self.name} metric:")
+        for metric_name, metric_value in metric_dict.items():
+            self.logger.info(f"{metric_name} - {metric_value}")
+        return metric_dict
+
+    def set_name(self, name):
+        self.name = name
 
     def get_params(self):
         return self.params

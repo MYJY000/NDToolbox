@@ -60,6 +60,7 @@ def opt2str(opt, indent_level=1):
 
 
 def dict2yaml(ordered_dict):
+    ordered_dict = OrderedDict(ordered_dict)
     yaml_string = yaml.dump(ordered_dict, Dumper=ordered_yaml()[1])
     return yaml_string
 
