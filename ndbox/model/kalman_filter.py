@@ -32,17 +32,17 @@ class KalmanFilterRegression(MLBaseModel):
             This is the outputs that are being predicted.
         """
 
-        _X = np.matrix(y.T)
+        X = np.matrix(y.T)
         Z = np.matrix(x.T)
-        nt = _X.shape[1]
-        x2 = _X[:, 1:]
-        x1 = _X[:, 0:nt - 1]
+        nt = X.shape[1]
+        x2 = X[:, 1:]
+        x1 = X[:, 0:nt - 1]
         A = x2 * x1.T * inv(x1 * x1.T)
         W = (x2 - A * x1) * (x2 - A * x1).T / (nt - 1) / self.params['C']
-        H = Z * _X.T * (inv(_X * _X.T))
-        Q = ((Z - H * _X) * (Z - H * _X).T) / nt
+        H = Z * X.T * (inv(X * X.T))
+        Q = ((Z - H * X) * (Z - H * X).T) / nt
         params = [A, W, H, Q]
-        self._X = _X
+        self.X = X
         self.model = params
 
     def predict(self, x):
@@ -56,15 +56,15 @@ class KalmanFilterRegression(MLBaseModel):
         """
 
         A, W, H, Q = self.model
-        _X = self._X
+        X = self.X
         Z = np.matrix(x.T)
-        num_states = _X.shape[0]
-        states = np.empty(_X.shape)
+        num_states = X.shape[0]
+        states = np.empty([num_states, Z.shape[1]])
         P = np.matrix(np.zeros([num_states, num_states]))
-        state = _X[:, 0]
+        state = X[:, 0]
         states[:, 0] = np.copy(np.squeeze(state))
 
-        for t in range(_X.shape[1] - 1):
+        for t in range(Z.shape[1] - 1):
             P_m = A * P * A.T + W
             state_m = A * state
             K = P_m * H.T * inv(H * P_m * H.T + Q)
@@ -88,7 +88,7 @@ class KalmanFilterRegression(MLBaseModel):
         data = np.load(path)
         self.model = [data['A'], data['W'], data['H'], data['Q']]
         self.params['C'] = data['C'][0]
-        self.logger.info(f"Loading {self.__class__.__name__} model from '{path}'")
+        self.logger.info(f"Loading {self.name} model from '{path}'")
 
     def save(self, path):
         """
@@ -97,7 +97,7 @@ class KalmanFilterRegression(MLBaseModel):
         :param path: str. The path of models to be saved.
         """
 
-        self.logger.info(f"Save {self.__class__.__name__} model in {path}.")
+        self.logger.info(f"Save {self.name} model in {path}.")
         A, W, H, Q = self.model
         C = np.array([self.params['C']])
         np.savez(path, A=A, W=W, H=H, Q=Q, C=C)

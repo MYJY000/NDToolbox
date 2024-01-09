@@ -12,6 +12,7 @@ class MLBaseModel:
 
     def __init__(self, **kwargs):
         self.logger = get_root_logger()
+        self.identifier = 'ML'
         self.name = self.__class__.__name__
         self.params = {}
         self.model = None
@@ -26,10 +27,10 @@ class MLBaseModel:
         if not os.path.exists(path):
             raise FileNotFoundError(f"'{path}' File not found!")
         self.model = joblib.load(path)
-        self.logger.info(f"Loading {self.__class__.__name__} model from {path}.")
+        self.logger.info(f"Loading {self.name} model from {path}.")
 
     def save(self, path):
-        self.logger.info(f"Save {self.__class__.__name__} model in {path}.")
+        self.logger.info(f"Save {self.name} model in {path}.")
         joblib.dump(self.model, path)
 
     def validation(self, x, y_true, metric_list):
@@ -40,8 +41,16 @@ class MLBaseModel:
             self.logger.info(f"{metric_name} - {metric_value}")
         return metric_dict
 
-    def set_name(self, name):
-        self.name = name
-
     def get_params(self):
         return self.params
+
+
+class DLBaseModel:
+    """
+    Deep learning base model.
+    """
+
+    def __init__(self, **kwargs):
+        self.logger = get_root_logger()
+        self.identifier = 'DL'
+        self.name = self.__class__.__name__

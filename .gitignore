@@ -3,6 +3,8 @@
 __pycache__/
 .pytest_cache/
 test_*/
+d__image_*/
+p__image_*/
 *.egg-info
 result/
 *.log

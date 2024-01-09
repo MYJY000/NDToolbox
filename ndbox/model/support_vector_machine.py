@@ -61,7 +61,7 @@ class SupportVectorRegression(MLBaseModel):
                 self.params['max_iter'] = models['svr_' + str(i)].max_iter
                 self.params['C'] = models['svr_' + str(i)].C
         self.model = models
-        self.logger.info(f"Loading {self.__class__.__name__} model from '{path}'")
+        self.logger.info(f"Loading {self.name} model from '{path}'")
 
     def save(self, path):
         if not os.path.exists(path):

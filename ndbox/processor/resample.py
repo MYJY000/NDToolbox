@@ -23,7 +23,8 @@ def resample(nwb_data, target_bin: float, **kwargs):
                                   f"bin_size[{nwb_data.bin_size}].")
             return
         else:
-            raise NotImplementedError
+            raise NotImplementedError('target_bin not be an integer multiple of '
+                                      'bin_width is not supported in current version.')
     else:
         resample_factor = int(round(target_bin / nwb_data.bin_size))
         spike_mask = nwb_data.data.columns.str.startswith(nwb_data.spike_identifier)

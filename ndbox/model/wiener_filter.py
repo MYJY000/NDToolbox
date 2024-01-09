@@ -70,4 +70,4 @@ class WienerFilterClassification(MLBaseModel):
             raise FileNotFoundError(f"'{path}' File not found!")
         self.model = joblib.load(path)
         self.params['C'] = self.model.C
-        self.logger.info(f"Loading {self.__class__.__name__} model from '{path}'.")
+        self.logger.info(f"Loading {self.name} model from '{path}'.")

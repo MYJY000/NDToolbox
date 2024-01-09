@@ -63,7 +63,7 @@ experiment:
 
   exp_2:
     processor: # The order in the config file is the order in the program executes the processor
-      SubMonk:
+      SubIndy:
         resample:
           type: resample
           target_bin: 0.1
@@ -82,11 +82,11 @@ experiment:
       type: KalmanFilterRegression
       C: 1
     train:
-      dataset: SubMonk
-      target: ['behavior/cursor']
+      dataset: SubIndy
+      target: ['behavior/finger_vel']
     test:
-      dataset: SubMonk
-      target: ['behavior/cursor']
+      dataset: SubIndy
+      target: ['behavior/finger_vel']
     metrics:
       R2:
         type: calculate_R2

@@ -89,7 +89,7 @@ class WienerCascadeRegression(MLBaseModel):
                 )
                 self.params['degree'] = len(models['p_' + str(i)])
         self.model = models
-        self.logger.info(f"Loading {self.__class__.__name__} model from '{path}'")
+        self.logger.info(f"Loading {self.name} model from '{path}'")
 
     def save(self, path):
         """

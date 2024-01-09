@@ -34,7 +34,7 @@ def parse_options():
 
 
 def create_regression_project(args):
-    project_path, user_define_path = create_project_structure(path.join(args.path, args.name))
+    project_path, user_define_path = create_regression_project_structure(path.join(args.path, args.name))
     regression_pipeline_init(project_path)
     regression_web_ui_init(project_path)
     regression_result_report_init(project_path)
@@ -83,7 +83,7 @@ def analyzer_init(ana_path_list, root_path, dir_structure):
             analyzer_init(ana_path_list, sub_path, sub)
 
 
-def create_project_structure(project_path):
+def create_regression_project_structure(project_path):
     if path.exists(project_path):
         raise FileExistsError(f"Project {project_path} already exists!")
     os.makedirs(project_path)
