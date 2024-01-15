@@ -3,6 +3,8 @@ import random
 import argparse
 import time
 import datetime
+
+import numpy as np
 import pandas as pd
 from os import path
 from collections import OrderedDict
@@ -69,8 +71,8 @@ def run_pipeline():
         processor_opt = exp_opt.get('processor', OrderedDict())
         model_opt = exp_opt.get('model', OrderedDict())
         train_opt = exp_opt.get('train', OrderedDict())
-        validate_opt = exp_opt.get('validate', OrderedDict())
-        test_opt = exp_opt.get('test', OrderedDict())
+        val_opt = exp_opt.get('val', OrderedDict())
+        test_list = [item for item in exp_opt.keys() if str(item).startswith('test')]
         metrics_opt = exp_opt.get('metrics', OrderedDict())
 
         # processor dataset
@@ -91,7 +93,7 @@ def run_pipeline():
             model_list.append(model)
         else:
             train_dataset_name = train_opt.get('dataset')
-            validate_dataset_name = validate_opt.get('dataset')
+            val_dataset_name = val_opt.get('dataset')
             if train_dataset_name is not None:
                 train_dataset = datasets[train_dataset_name]
                 train_target = train_opt['target']
@@ -99,13 +101,13 @@ def run_pipeline():
                 _, train_x = train_dataset.get_spike_array()
                 train_y_col, train_y = train_dataset.get_behavior_array(train_target)
                 split_col, split_data = train_dataset.get_data_startswith(train_dataset.split_identifier)
-                validate_x = None
-                validate_y = None
-                if validate_dataset_name is not None:
-                    validate_dataset = datasets[validate_dataset_name]
-                    validate_target = validate_opt['target']
-                    validate_x = validate_dataset.get_spike_array()
-                    validate_y = validate_dataset.get_behavior_array(validate_target)
+                val_x = None
+                val_y = None
+                if val_dataset_name is not None:
+                    val_dataset = datasets[val_dataset_name]
+                    val_target = val_opt['target']
+                    val_x = val_dataset.get_spike_array()
+                    val_y = val_dataset.get_behavior_array(val_target)
 
                 # fit & save
                 model_path = path.join(exp_path, 'model')
@@ -118,9 +120,9 @@ def run_pipeline():
                         model_path=model_path,
                         model_name_suffix='',
                         model_opt=model_opt,
-                        validate_x=validate_x,
-                        validate_y=validate_y,
-                        validate_opt=validate_opt,
+                        val_x=val_x,
+                        val_y=val_y,
+                        val_opt=val_opt,
                         logger=logger
                     )
                     model_list.append(model)
@@ -134,9 +136,9 @@ def run_pipeline():
                             model_path=model_path,
                             model_name_suffix='_' + str(col),
                             model_opt=model_opt,
-                            validate_x=validate_x,
-                            validate_y=validate_y,
-                            validate_opt=validate_opt,
+                            val_x=val_x,
+                            val_y=val_y,
+                            val_opt=val_opt,
                             logger=logger,
                         )
                         model_list.append(model)
@@ -156,7 +158,7 @@ def run_pipeline():
                         model_list=model_list,
                         metrics_opt=metrics_opt,
                         mask=split_data,
-                        select=TRAIN_MASK
+                        select=[TRAIN_MASK]
                     )
                 if metrics_result is not None:
                     save_metrics(
@@ -168,41 +170,43 @@ def run_pipeline():
 
         # test model
         logger.info('Test model.')
-        test_dataset_name = test_opt.get('dataset')
-        if test_dataset_name is not None:
-            test_dataset = datasets[test_dataset_name]
-            test_target = test_opt['target']
-            _, test_x = test_dataset.get_spike_array()
-            test_y_col, test_y = test_dataset.get_behavior_array(test_target)
-            split_col, split_data = test_dataset.get_data_startswith(test_dataset.split_identifier)
-            metrics_result = None
-            if len(split_col) == 0:
-                metrics_result = test_pipeline(
-                    x=test_x,
-                    y_true=test_y,
-                    model_list=model_list,
-                    metrics_opt=metrics_opt,
-                )
-            elif len(split_col) == len(model_list):
-                metrics_result = test_pipeline(
-                    x=test_x,
-                    y_true=test_y,
-                    model_list=model_list,
-                    metrics_opt=metrics_opt,
-                    mask=split_data,
-                    select=TEST_MASK
-                )
-            else:
-                logger.error(f'Test model failed. Split columns [{len(split_col)}] not equal'
-                             f' to number of models [{len(model_list)}].')
-            # save test metrics
-            if metrics_result is not None:
-                save_metrics(
-                    save_path=path.join(exp_path, 'test_metrics.csv'),
-                    metrics_result=metrics_result,
-                    columns_name=test_y_col,
-                    metrics_opt=metrics_opt
-                )
+        for item in test_list:
+            test_opt = exp_opt[item]
+            test_dataset_name = test_opt.get('dataset')
+            if test_dataset_name is not None:
+                test_dataset = datasets[test_dataset_name]
+                test_target = test_opt['target']
+                _, test_x = test_dataset.get_spike_array()
+                test_y_col, test_y = test_dataset.get_behavior_array(test_target)
+                split_col, split_data = test_dataset.get_data_startswith(test_dataset.split_identifier)
+                metrics_result = None
+                if len(split_col) == 0:
+                    metrics_result = test_pipeline(
+                        x=test_x,
+                        y_true=test_y,
+                        model_list=model_list,
+                        metrics_opt=metrics_opt,
+                    )
+                elif len(split_col) == len(model_list):
+                    metrics_result = test_pipeline(
+                        x=test_x,
+                        y_true=test_y,
+                        model_list=model_list,
+                        metrics_opt=metrics_opt,
+                        mask=split_data,
+                        select=[TEST_MASK]
+                    )
+                else:
+                    logger.error(f'Test model failed. Split columns [{len(split_col)}] not equal'
+                                 f' to number of models [{len(model_list)}].')
+                # save test metrics
+                if metrics_result is not None:
+                    save_metrics(
+                        save_path=path.join(exp_path, f'{item}_{test_dataset_name}_metrics.csv'),
+                        metrics_result=metrics_result,
+                        columns_name=test_y_col,
+                        metrics_opt=metrics_opt
+                    )
 
         # recover dataset
         if index < len(experiments_opt) - 1:
@@ -217,7 +221,7 @@ def run_pipeline():
 
 
 def train_pipeline(train_x, train_y, train_opt, model_path, model_name_suffix, model_opt,
-                   validate_x, validate_y, validate_opt, logger):
+                   val_x, val_y, val_opt, logger):
     model = build_model(model_opt)
     model.name = model.name + model_name_suffix
     logger.info('Start training.')
@@ -225,6 +229,20 @@ def train_pipeline(train_x, train_y, train_opt, model_path, model_name_suffix, m
     if model.identifier == 'ML':
         model.fit(train_x, train_y)
     elif model.identifier == 'DL':
+        '''
+        1. model.feed_data(data)
+            data = {
+                'train_x': train_x,
+                'train_y': train_y,
+                'train_opt': train_opt,
+                'val_x': val_x,
+                'val_y': val_y,
+                'val_opt': val_opt,
+                'model_path': model_path
+            }
+        2. init train setting
+        3. loop train epoch
+        '''
         pass
     consumed_time = str(datetime.timedelta(seconds=int(time.time() - start_time)))
     logger.info(f'End of training. Time consumed: {consumed_time}.')
@@ -238,7 +256,7 @@ def test_pipeline(x, y_true, model_list, metrics_opt, mask=None, select=None):
     metrics_result = {}
     for idx, model in enumerate(model_list):
         if mask is not None:
-            _mask = (mask[:, idx] == select)
+            _mask = np.isin(mask[:, idx], select)
             metric_result = model.validation(x[_mask], y_true[_mask], metrics_opt)
         else:
             metric_result = model.validation(x, y_true, metrics_opt)

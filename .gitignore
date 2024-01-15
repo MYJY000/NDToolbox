@@ -7,5 +7,6 @@ d__image_*/
 p__image_*/
 *.egg-info
 result/
+test_opt.py
 *.log
 *.nwb
