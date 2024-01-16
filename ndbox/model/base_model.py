@@ -2,6 +2,7 @@ import os
 import torch
 import joblib
 import time
+from copy import deepcopy
 
 from ndbox.utils import get_root_logger
 from ndbox.metric import build_metric
@@ -50,6 +51,9 @@ class MLBaseModel:
 class DLBaseModel:
     """
     Deep learning base model.
+
+    Modified from:
+    https://github.com/XPixelGroup/BasicSR/blob/master/basicsr/models/base_model.py
     """
 
     def __init__(self, device='cpu', **kwargs):
@@ -111,19 +115,67 @@ class DLBaseModel:
             finally:
                 retry -= 1
         if retry == 0:
-            self.logger.warning(f'Still cannot save {save_path}. Just ignore it.')
+            self.logger.warning(f'Still cannot save {save_path}.')
 
-    def save_network(self, net, net_label, epoch, key='net'):
+    def save_network(self, nets, net_label, epoch, net_keys='default_net'):
         save_filename = f'{net_label}_{epoch}.pth'
         save_path = os.path.join(self.model_path, save_filename)
 
-        net = net if isinstance(net, list) else [net]
-        key = key if isinstance(key, list) else [key]
-        assert len(net) == len(key), 'The length of net and key must match'
+        nets = nets if isinstance(nets, list) else [nets]
+        net_keys = net_keys if isinstance(net_keys, list) else [net_keys]
+        assert len(nets) == len(net_keys), 'The length of net and key must match'
 
         save_dict = {}
-        for net_, key_ in zip(net, key):
-            pass
+        for net, net_key in zip(nets, net_keys):
+            state_dict = net.state_dict()
+            for key, param in state_dict.items():
+                if key.startswith('module.'):
+                    key = key[7:]
+                state_dict[key] = param.cpu()
+            save_dict[net_key] = state_dict
 
-    def load_network(self, net, net_label, epoch):
-        pass
+        retry = 3
+        while retry > 0:
+            try:
+                torch.save(save_dict, save_path)
+            except Exception as e:
+                self.logger.warning(f'Save model error: {e}, remaining'
+                                    f' retry times: {retry - 1}')
+            else:
+                break
+            finally:
+                retry -= 1
+        if retry == 0:
+            self.logger.warning(f'Still cannot save {save_path}')
+
+    def load_network(self, net, load_path, strict=True, net_key='params'):
+        load_net = torch.load(load_path, map_location=lambda storage, loc: storage)
+        load_net = load_net[net_key]
+        self.logger.info(f'Loading {net.__class__.__name__} network from {load_path}')
+        for key, param in deepcopy(load_net).items():
+            if key.startswith('module.'):
+                load_net[key[7:]] = param
+                load_net.pop(key)
+        self._print_different_keys(net, load_net, strict)
+        net.load_state_dict(load_net, strict=strict)
+
+    def _print_different_keys(self, net, load_net, strict=True):
+        net = net.state_dict()
+        net_keys = set(net.keys())
+        load_net_keys = set(load_net.keys())
+
+        if net_keys != load_net_keys:
+            self.logger.warning('Current net - loaded net:')
+            for v in sorted(list(net_keys - load_net_keys)):
+                self.logger.warning(f'  {v}')
+            self.logger.warning('Loaded net - current net:')
+            for v in sorted(list(load_net_keys - net_keys)):
+                self.logger.warning(f'  {v}')
+
+        if not strict:
+            common_keys = net_keys & load_net_keys
+            for k in common_keys:
+                if net[k].size() != load_net[k].size():
+                    self.logger.warning(f'Size different, ignore [{k}], Current net: '
+                                        f'{net[k].shape}, loaded net: {load_net[k].shape}')
+                    load_net[k + '.ignore'] = load_net.pop(k)

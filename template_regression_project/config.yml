@@ -93,58 +93,59 @@ experiment:
       CC:
         type: calculate_cc
 
-#  exp_3:
-#    processor: # The order in the config file is the order in the program executes the processor
-#      SubIndy:
-#        resample:
-#          type: resample
-#          target_bin: 0.1
-#        smooth:
-#          type: gaussian_smooth
-#          gauss_width: 0.5  # the standard deviation of the Gaussian to use for smoothing, in seconds
-#          ignore_nans: False
-#        lag:
-#          type: lag_offset
-#          offset: 0.1       # The behavior data lagged behind neural data by 0.1 seconds.
-#        split:
-#          type: train_test_bins_split
-#          test_size: 0.3
-#          shuffle: False
-#    model:
-#      type: MLPRegression
-#      pretrain_net: ~
-#      state_path: ~
-#      network:
-#        type: MLP
-#        dims: [130, 100, 100, 2]
-#        activation: relu
-#        dropout: 0
-#    train:
-#      dataset: SubIndy
-#      target: [ 'behavior/finger_vel' ]
-#      epochs: 200
-#      optimizer:
-#        type: Adma
-#        lr: 0.001
-#        betas: [0.9, 0.99]
-#      scheduler:
-#        type: MultiStepLR
-#        milestones: [50, 150]
-#        gamma: 0.5
-#      loss:
-#        type: L1Loss
-#        weight: 1.0
-#      log_freq: 20
-#      save_checkpioint_freq: 100
-#    val:
-#      dataset: SubIndy
-#      target: [ 'behavior/finger_vel' ]
-#      val_freq: 50
-#    test_1:
-#      dataset: SubIndy
-#      target: [ 'behavior/finger_vel' ]
-#    metrics:
-#      R2:
-#        type: calculate_R2
-#      CC:
-#        type: calculate_cc
+  exp_3:
+    processor: # The order in the config file is the order in the program executes the processor
+      SubIndy:
+        resample:
+          type: resample
+          target_bin: 0.1
+        smooth:
+          type: gaussian_smooth
+          gauss_width: 0.5  # the standard deviation of the Gaussian to use for smoothing, in seconds
+          ignore_nans: False
+        lag:
+          type: lag_offset
+          offset: 0.1       # The behavior data lagged behind neural data by 0.1 seconds.
+        split:
+          type: train_test_bins_split
+          test_size: 0.3
+          shuffle: False
+    model:
+      type: MLPRegression
+      path:
+        pretrain_net: ~
+        state_path: ~
+      network:
+        type: MLP
+        dims: [130, 100, 100, 2]
+        activation: relu
+        dropout: 0
+    train:
+      dataset: SubIndy
+      target: [ 'behavior/finger_vel' ]
+      epochs: 200
+      optimizer:
+        type: Adma
+        lr: 0.001
+        betas: [0.9, 0.99]
+      scheduler:
+        type: MultiStepLR
+        milestones: [50, 150]
+        gamma: 0.5
+      loss:
+        type: L1Loss
+        weight: 1.0
+      log_freq: 20
+      save_checkpioint_freq: 100
+    val:
+      dataset: SubIndy
+      target: [ 'behavior/finger_vel' ]
+      val_freq: 50
+    test_1:
+      dataset: SubIndy
+      target: [ 'behavior/finger_vel' ]
+    metrics:
+      R2:
+        type: calculate_R2
+      CC:
+        type: calculate_cc

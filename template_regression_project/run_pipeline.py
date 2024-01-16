@@ -89,7 +89,14 @@ def run_pipeline():
         model_list = []
         if model_load_path is not None:
             model = build_model(model_opt)
-            model.load(model_load_path)
+            if model.identifier == 'ML':
+                model.load(model_load_path)
+            elif model.identifier == 'DL':
+                '''
+                1. pretrain_net, load_network
+                2. state_path, load_state
+                '''
+                pass
             model_list.append(model)
         else:
             train_dataset_name = train_opt.get('dataset')
@@ -238,7 +245,6 @@ def train_pipeline(train_x, train_y, train_opt, model_path, model_name_suffix, m
                 'val_x': val_x,
                 'val_y': val_y,
                 'val_opt': val_opt,
-                'model_path': model_path
             }
         2. init train setting
         3. loop train epoch

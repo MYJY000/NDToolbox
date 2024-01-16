@@ -2,7 +2,8 @@ from copy import deepcopy
 
 from ndbox.utils import METRIC_REGISTRY
 from .regression_metric import calculate_R2, calculate_cc, calculate_mae, calculate_mse, calculate_rmse
-from .classification_metric import calculate_acc
+from .classification_metric import (calculate_precision, calculate_accuracy, calculate_recall,
+                                    calculate_confusion_matrix)
 
 __all__ = [
     'calculate_metric',
@@ -14,7 +15,10 @@ __all__ = [
     'calculate_mse',
     'calculate_rmse',
     # classification_metric.py
-    'calculate_acc',
+    'calculate_accuracy',
+    'calculate_recall',
+    'calculate_precision',
+    'calculate_confusion_matrix',
 ]
 
 
