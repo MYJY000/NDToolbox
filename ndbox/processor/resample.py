@@ -61,7 +61,10 @@ def lag_offset(nwb_data, offset: float, **kwargs):
     bin_size = nwb_data.bin_size
     lag_bins = int(round(offset / bin_size))
     spike_columns, other_columns = nwb_data.get_spike_and_other_columns()
-    data_index = deepcopy(nwb_data.data.index[:(-2 * lag_bins)])
+    if lag_bins == 0:
+        data_index = deepcopy(nwb_data.data.index[:])
+    else:
+        data_index = deepcopy(nwb_data.data.index[:(-2 * lag_bins)])
     nwb_data.data[spike_columns] = nwb_data.data[spike_columns].shift(-lag_bins)
     nwb_data.data[other_columns] = nwb_data.data[other_columns].shift(lag_bins)
     nwb_data.data = nwb_data.data.dropna()

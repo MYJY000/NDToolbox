@@ -2,6 +2,8 @@ import os
 import pandas as pd
 import streamlit as st
 
+from ndbox.utils import files_form_folder
+
 
 @st.cache_data
 def load_data(filepath):
@@ -13,7 +15,6 @@ def round_list(data):
 
 
 def report_ui():
-    root = os.path.abspath(os.path.join(__file__, os.path.pardir))
     dir_path = os.path.join(root, 'results')
     results_dir = os.listdir(dir_path)
 
@@ -25,11 +26,15 @@ def report_ui():
 
         for folder in exp_folders:
             st.subheader(str(folder))
-            df = load_data(os.path.join(result_dir, folder, 'metric.csv'))
-            df = df.applymap(round_list)
-            df.index.name = 'Model Name'
-            st.dataframe(df)
+            metric_filenames = files_form_folder(os.path.join(result_dir, folder), '*_metrics.csv')
+            for metric_filename in metric_filenames:
+                st.text(str(os.path.basename(metric_filename)))
+                df = load_data(metric_filename)
+                df = df.map(round_list)
+                df.index.name = 'Model Name'
+                st.dataframe(df)
 
 
 if __name__ == '__main__':
+    root = os.path.abspath(os.path.join(__file__, os.path.pardir))
     report_ui()
