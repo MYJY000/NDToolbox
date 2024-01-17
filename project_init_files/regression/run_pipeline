@@ -12,7 +12,7 @@ from collections import OrderedDict
 from ndbox.model import build_model
 from ndbox.processor import TRAIN_MASK, TEST_MASK
 from ndbox.utils import (yaml_load, opt2str, set_random_seed, get_root_logger,
-                         load_image, restore_image)
+                         load_image, restore_image, file2file)
 
 try:
     import user_define_modules
@@ -38,6 +38,7 @@ def parse_options():
     opt['path']['result'] = result_path
     opt['path']['log'] = log_path
     os.makedirs(result_path)
+    file2file(args.opt, path.join(result_path, 'config.yml'))
 
     seed = opt.get('random_seed')
     if seed is None:

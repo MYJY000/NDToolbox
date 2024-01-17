@@ -1,0 +1,146 @@
+name: test_result_report
+random_seed: 0
+dataset:
+  SubIndy:
+    behavior:
+    - behavior/cursor_pos
+    - behavior/finger_pos
+    name: SubIndy
+    path: /Users/yjy/Desktop/nd/NDToolbox/datasets/sub_indy/sub-Indy_desc-train_behavior+ecephys.nwb
+    type: NWBDataset
+experiment:
+  exp_1:
+    metrics:
+      calculate_R2:
+        type: calculate_R2
+      calculate_cc:
+        type: calculate_cc
+    model:
+      type: WienerFilterRegression
+    name: exp_1
+    processor:
+      SubIndy:
+        1_resample:
+          target_bin: 0.1
+          type: resample
+        2_smooth:
+          gauss_width: 0.5
+          ignore_nans: False
+          type: gaussian_smooth
+        3_lag:
+          offset: 0.1
+          type: lag_offset
+        4_split:
+          train_size: 0.7
+          type: train_test_bins_split
+    test:
+      dataset: SubIndy
+      target:
+      - behavior/finger_pos
+    train:
+      dataset: SubIndy
+      target:
+      - behavior/finger_pos
+
+  exp_2:
+    metrics:
+      calculate_R2:
+        type: calculate_R2
+      calculate_cc:
+        type: calculate_cc
+    model:
+      type: KalmanFilterRegression
+      C: 1
+    name: exp_2
+    processor:
+      SubIndy:
+        1_resample:
+          target_bin: 0.1
+          type: resample
+        2_smooth:
+          gauss_width: 0.5
+          ignore_nans: False
+          type: gaussian_smooth
+        3_lag:
+          offset: 0.1
+          type: lag_offset
+        4_split:
+          train_size: 0.7
+          type: train_test_bins_split
+    test:
+      dataset: SubIndy
+      target:
+        - behavior/finger_pos
+    train:
+      dataset: SubIndy
+      target:
+        - behavior/finger_pos
+
+  exp_3:
+    metrics:
+      calculate_R2:
+        type: calculate_R2
+      calculate_cc:
+        type: calculate_cc
+    model:
+      type: SupportVectorRegression
+      max_iter: -1
+      C: 3.0
+    name: exp_3
+    processor:
+      SubIndy:
+        1_resample:
+          target_bin: 0.1
+          type: resample
+        2_smooth:
+          gauss_width: 0.5
+          ignore_nans: False
+          type: gaussian_smooth
+        3_lag:
+          offset: 0.1
+          type: lag_offset
+        4_split:
+          train_size: 0.7
+          type: train_test_bins_split
+    test:
+      dataset: SubIndy
+      target:
+        - behavior/finger_pos
+    train:
+      dataset: SubIndy
+      target:
+        - behavior/finger_pos
+
+  exp_4:
+    metrics:
+      calculate_R2:
+        type: calculate_R2
+      calculate_cc:
+        type: calculate_cc
+    model:
+      type: WienerCascadeRegression
+      degree: 5
+    name: exp_4
+    processor:
+      SubIndy:
+        1_resample:
+          target_bin: 0.1
+          type: resample
+        2_smooth:
+          gauss_width: 0.5
+          ignore_nans: False
+          type: gaussian_smooth
+        3_lag:
+          offset: 0.1
+          type: lag_offset
+        4_split:
+          train_size: 0.7
+          type: train_test_bins_split
+    test:
+      dataset: SubIndy
+      target:
+        - behavior/finger_pos
+    train:
+      dataset: SubIndy
+      target:
+        - behavior/finger_pos

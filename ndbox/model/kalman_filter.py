@@ -88,6 +88,7 @@ class KalmanFilterRegression(MLBaseModel):
         data = np.load(path)
         self.model = [data['A'], data['W'], data['H'], data['Q']]
         self.params['C'] = data['C'][0]
+        self.X = np.matrix(data['X'])
         self.logger.info(f"Loading {self.name} model from '{path}'")
 
     def save(self, path):
@@ -100,4 +101,5 @@ class KalmanFilterRegression(MLBaseModel):
         self.logger.info(f"Save {self.name} model in {path}.")
         A, W, H, Q = self.model
         C = np.array([self.params['C']])
-        np.savez(path, A=A, W=W, H=H, Q=Q, C=C)
+        X = np.array(self.X)
+        np.savez(path, A=A, W=W, H=H, Q=Q, C=C, X=X)
