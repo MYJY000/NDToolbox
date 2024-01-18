@@ -22,7 +22,8 @@ def report_ui():
     page_name = st.sidebar.selectbox('Select Directory', results_dir + ['-'])
     if page_name != '-':
         result_dir = os.path.join(dir_path, page_name)
-        plot(result_dir, root)
+        if not os.path.exists(os.path.join(result_dir, 'hist.png')):
+            plot(result_dir, root)
         exp_folders = [entry for entry in os.listdir(result_dir)
                        if os.path.isdir(os.path.join(result_dir, entry))]
 

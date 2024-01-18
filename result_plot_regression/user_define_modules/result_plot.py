@@ -44,8 +44,15 @@ def trace_plot(index, y_true, y_pred, save_path, model_name):
     plt.savefig(path.join(save_path, 'trace.png'), dpi=300, bbox_inches='tight')
 
 
-def hist_plot():
-    pass
+def hist_plot(label, r2_val, cc_val, result_dir):
+    fig, (ax1, ax2) = plt.subplots(1, 2)
+    ax1.bar(label, r2_val, width=0.5)
+    ax2.bar(label, cc_val, width=0.5)
+    ax1.set_title('R2')
+    ax1.set_xticklabels(label, rotation=90, fontsize=8)
+    ax2.set_title('CC')
+    ax2.set_xticklabels(label, rotation=90, fontsize=8)
+    plt.savefig(path.join(result_dir, 'hist.png'), dpi=300, bbox_inches='tight')
 
 
 def plot(result_dir, root):
@@ -58,6 +65,9 @@ def plot(result_dir, root):
     exp_folder = [entry for entry in os.listdir(result_dir)
                   if path.isdir(path.join(result_dir, entry))]
 
+    model_label = []
+    r2_val = []
+    cc_val = []
     for folder in exp_folder:
         exp_name = str(folder)
         exp_opt = experiment_opt.get(exp_name)
@@ -70,6 +80,8 @@ def plot(result_dir, root):
             # load model
             model_load_path = path.join(exp_path, 'model')
             _mode_path = os.listdir(model_load_path)
+            model_name = _mode_path[0].split('.')[0]
+            model_label.append(model_name)
             model_load_path = path.join(model_load_path, _mode_path[0])
             model = build_model(model_opt)
             model.load(model_load_path)
@@ -87,4 +99,12 @@ def plot(result_dir, root):
                 _, y_true = dataset.get_behavior_array(target)
                 index = dataset.data.index
                 y_pred = model.predict(x)
-                trace_plot(index, y_true, y_pred, exp_path, _mode_path[0])
+                trace_plot(index, y_true, y_pred, exp_path, model_name)
+
+        metric_filename = path.join(exp_path, 'train_metrics.csv')
+        df = pd.read_csv(metric_filename, index_col=0, header=0)
+        df = df.map(lambda u: np.array(eval(u)))
+        row_mean = df.iloc[0].mean()
+        r2_val.append(row_mean[0])
+        cc_val.append(row_mean[1])
+    hist_plot(model_label, r2_val, cc_val, result_dir)
