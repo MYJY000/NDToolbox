@@ -4,10 +4,26 @@ import pandas as pd
 import matplotlib.pylab as plt
 from matplotlib.collections import LineCollection
 from collections import OrderedDict
+from random import randint
 from os import path
 
 from ndbox.model import build_model
 from ndbox.utils import yaml_load, load_image
+
+color_list = ['#50C48F', '#26CCD8', '#3685FE', '#9977EF', '#F5616F']
+
+
+def generate_random_color():
+    r = randint(25, 200)
+    g = randint(25, 200)
+    b = randint(25, 200)
+    return f'#{r:02x}{g:02x}{b:02x}'
+
+
+def get_color(inx):
+    if inx >= len(color_list):
+        color_list.append(generate_random_color())
+    return color_list[inx]
 
 
 def trace_plot(index, y_true, y_pred, save_path, model_name):
@@ -43,11 +59,24 @@ def trace_plot(index, y_true, y_pred, save_path, model_name):
     plt.colorbar(lines2, label='Time (s)')
     plt.savefig(path.join(save_path, 'trace.png'), dpi=300, bbox_inches='tight')
 
+    plt.clf()
+    fig, ax = plt.subplots()
+    ax.plot(x1, y1, label='True Finger Position', color='black', linewidth=2)
+    ax.plot(x2, y2, label='Predict Finger Position', color='red', linewidth=2)
+    ax.set_xlim(-100, 100)
+    ax.set_ylim(-20, 130)
+    ax.set_title('Finger Position')
+    ax.legend()
+    plt.savefig(path.join(save_path, 'trace_compare.png'), dpi=300, bbox_inches='tight')
+
 
 def hist_plot(label, r2_val, cc_val, result_dir):
+    colors = []
+    for inx in range(len(label)):
+        colors.append(get_color(inx))
     fig, (ax1, ax2) = plt.subplots(1, 2)
-    ax1.bar(label, r2_val, width=0.5)
-    ax2.bar(label, cc_val, width=0.5)
+    ax1.bar(label, r2_val, width=0.5, color=colors)
+    ax2.bar(label, cc_val, width=0.5, color=colors)
     ax1.set_title('R2')
     ax1.set_xticklabels(label, rotation=90, fontsize=8)
     ax2.set_title('CC')
