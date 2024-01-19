@@ -109,7 +109,8 @@ def trace_plot(index, y_true, y_pred, save_path, model_name):
 
         num_steps = len(t)
         walks = np.array([t_data, p_data])
-        ani = animation.FuncAnimation(fig, update_lines, fargs=(walks, lines), interval=100, repeat_delay=500)
+        ani = animation.FuncAnimation(fig, update_lines, fargs=(walks, lines),
+                                      interval=100, repeat_delay=500, save_count=50)
         ani.save(path.join(save_path, 'trace_3d.gif'), dpi=300, writer='imagemagick')
 
 

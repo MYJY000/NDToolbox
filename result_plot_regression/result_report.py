@@ -18,24 +18,30 @@ def round_list(data):
 def report_ui():
     dir_path = os.path.join(root, 'results')
     results_dir = os.listdir(dir_path)
+    results_dir = [r for r in results_dir if 'result' in r]
 
     page_name = st.sidebar.selectbox('Select Directory', results_dir + ['-'])
     if page_name != '-':
         result_dir = os.path.join(dir_path, page_name)
         if not os.path.exists(os.path.join(result_dir, 'hist.png')):
             plot(result_dir, root)
+        st.image(os.path.join(result_dir, 'hist.png'))
         exp_folders = [entry for entry in os.listdir(result_dir)
                        if os.path.isdir(os.path.join(result_dir, entry))]
 
         for folder in exp_folders:
             st.subheader(str(folder))
-            metric_filenames = files_form_folder(os.path.join(result_dir, folder), '*_metrics.csv')
+            exp_path = os.path.join(result_dir, folder)
+            metric_filenames = files_form_folder(exp_path, '*_metrics.csv')
             for metric_filename in metric_filenames:
                 st.text(str(os.path.basename(metric_filename)))
                 df = load_data(metric_filename)
                 df = df.map(round_list)
                 df.index.name = 'Model Name'
                 st.dataframe(df)
+            st.image(os.path.join(exp_path, 'trace.png'))
+            st.image(os.path.join(exp_path, 'trace_compare.png'))
+            st.image(os.path.join(exp_path, 'trace_3d.gif'))
 
 
 if __name__ == '__main__':
