@@ -136,7 +136,7 @@ experiment:
         gamma: 0.5
       loss:
         type: L1Loss
-        weight: 1.0
+        loss_weight: 1.0
       log_freq: 20
       save_checkpioint_freq: 100
     val:

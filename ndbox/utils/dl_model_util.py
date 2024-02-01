@@ -1,3 +1,5 @@
+import functools
+
 from torch import nn as nn
 from torch.nn import init as init
 from torch.utils.data import DataLoader, Dataset
@@ -58,3 +60,42 @@ def default_init_weights(module_list, scale=1, bias_fill=0, **kwargs):
                 m.weight.data *= scale
                 if m.bias is not None:
                     m.bias.data.fill_(bias_fill)
+
+
+def weighted_loss(loss_func):
+    @functools.wraps(loss_func)
+    def wrapper(pred, target, weight=None, reduction='mean', **kwargs):
+        loss = loss_func(pred, target, **kwargs)
+        loss = weight_reduce_loss(loss, weight, reduction)
+        return loss
+
+    return wrapper
+
+
+def weight_reduce_loss(loss, weight=None, reduction='mean'):
+    if weight is not None:
+        assert weight.dim() == loss.dim()
+        assert weight.size(1) == 1 or weight.size(1) == loss.size(1)
+        loss = loss * weight
+
+    if weight is None or reduction == 'sum':
+        loss = reduce_loss(loss, reduction)
+    elif reduction == 'mean':
+        if weight.size(1) > 1:
+            weight = weight.sum()
+        else:
+            weight = weight.sum() * loss.size(1)
+        loss = loss.sum() / weight
+
+    return loss
+
+
+def reduce_loss(loss, reduction):
+    if reduction == 'none':
+        return loss
+    elif reduction == 'mean':
+        return loss.mean()
+    elif reduction == 'sum':
+        return loss.sum()
+    else:
+        raise ValueError(f'Unknown reduction {reduction}')
