@@ -1,4 +1,3 @@
-import torch
 from torch import nn as nn
 
 from ndbox.utils import ARCH_REGISTRY
@@ -6,6 +5,7 @@ from ndbox.utils import ARCH_REGISTRY
 
 @ARCH_REGISTRY.register()
 class MLP(nn.Module):
+
     def __init__(self, dim_in, dim_out, hidden_dims=None, dropout=0):
         super(MLP, self).__init__()
         if hidden_dims is None:

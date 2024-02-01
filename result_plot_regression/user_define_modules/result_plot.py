@@ -107,7 +107,6 @@ def trace_plot(index, y_true, y_pred, save_path, model_name):
                 line.set_3d_properties(walk[:_num, 2])
             return _lines
 
-        num_steps = len(t)
         walks = np.array([t_data, p_data])
         ani = animation.FuncAnimation(fig, update_lines, fargs=(walks, lines),
                                       interval=100, repeat_delay=500, save_count=50)

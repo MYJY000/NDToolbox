@@ -12,7 +12,8 @@ from collections import OrderedDict
 from ndbox.model import build_model
 from ndbox.processor import TRAIN_MASK, TEST_MASK
 from ndbox.utils import (yaml_load, opt2str, set_random_seed, get_root_logger,
-                         load_image, restore_image, file2file)
+                         load_image, restore_image, file2file, get_paired_dataloader,
+                         DatasetIter)
 
 try:
     import user_define_modules
@@ -221,35 +222,39 @@ def run_pipeline():
         logger.info(f'End experiment {exp_name}.')
 
 
+def load_resume_state():
+    pass
+
+
 def train_pipeline(train_x, train_y, train_opt, model_path, model_name_suffix, model_opt,
                    val_x, val_y, val_opt, logger):
     model = build_model(model_opt)
     model.name = model.name + model_name_suffix
-    logger.info('Start training.')
-    start_time = time.time()
+    save_path = path.join(model_path, model.name)
     if model.identifier == 'ML':
+        logger.info('Start training.')
+        start_time = time.time()
         model.fit(train_x, train_y)
+        consumed_time = str(datetime.timedelta(seconds=int(time.time() - start_time)))
+        logger.info(f'End of training. Time consumed: {consumed_time}.')
+        logger.info('Save model.')
+        model.save(save_path)
     elif model.identifier == 'DL':
         '''
         1. model.feed_data(data)
-            data = {
-                'train_x': train_x,
-                'train_y': train_y,
-                'train_opt': train_opt,
-                'val_x': val_x,
-                'val_y': val_y,
-                'val_opt': val_opt,
-                'model_path': model_path
-            }
         2. init train setting
         3. loop train epoch
         '''
-        pass
-    consumed_time = str(datetime.timedelta(seconds=int(time.time() - start_time)))
-    logger.info(f'End of training. Time consumed: {consumed_time}.')
-    logger.info('Save model.')
-    save_path = path.join(model_path, model.name)
-    model.save(save_path)
+        tot_epochs = train_opt.get('epochs', 10)
+        train_dataloader = get_paired_dataloader(train_x, train_y)
+        train_iter = DatasetIter(train_dataloader)
+        model.init_train_setting()
+        logger.info('Start training.')
+        start_time = time.time()
+        for epoch in range(tot_epochs + 1):
+            train_iter.reset()
+            if val_x is not None:
+                val_dataloader = get_paired_dataloader(val_x, val_y)
     return model
 
 

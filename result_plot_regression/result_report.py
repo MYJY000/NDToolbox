@@ -41,7 +41,6 @@ def report_ui():
                 st.dataframe(df)
             st.image(os.path.join(exp_path, 'trace.png'))
             st.image(os.path.join(exp_path, 'trace_compare.png'))
-            st.image(os.path.join(exp_path, 'trace_3d.gif'))
 
 
 if __name__ == '__main__':

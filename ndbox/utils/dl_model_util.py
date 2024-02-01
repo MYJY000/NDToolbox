@@ -1,5 +1,39 @@
 from torch import nn as nn
 from torch.nn import init as init
+from torch.utils.data import DataLoader, Dataset
+
+
+class PairedDataset(Dataset):
+
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __getitem__(self, index):
+        return self.x[index], self.y[index]
+
+    def __len__(self):
+        return len(self.x)
+
+
+class DatasetIter:
+
+    def __init__(self, loader):
+        self.loader = loader
+        self.iterator = iter(loader)
+
+    def next(self):
+        try:
+            return next(self.iterator)
+        except StopIteration:
+            return None
+
+    def reset(self):
+        self.iterator = iter(self.loader)
+
+
+def get_paired_dataloader(x, y):
+    return DataLoader(PairedDataset(x, y), batch_size=1, shuffle=False)
 
 
 def make_layer(basic_block, nums, **kwargs):

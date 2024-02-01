@@ -41,7 +41,8 @@ def create_regression_project(args):
 
 
 def create_classification_project(args):
-    pass
+    project_path, user_define_path = create_classification_project_structure(path.join(args.path, args.name))
+    classification_pipeline_init(project_path)
 
 
 def create_analyzer_project(args):
@@ -124,6 +125,31 @@ def regression_web_ui_init(project_path):
 def regression_result_report_init(project_path):
     src_filepath = path.join(root, 'project_init_files', 'regression', 'result_report')
     filepath = path.join(project_path, 'result_report.py')
+    file2file(src_filepath, filepath)
+
+
+def create_classification_project_structure(project_path):
+    if path.exists(project_path):
+        raise FileExistsError(f"Project {project_path} already exists!")
+    os.makedirs(project_path)
+    dir_structure = {
+        'user_define_modules': {
+            '__init__.py': None
+        },
+        'temp_files': {},
+        'results': {},
+        'config.yml': None,
+        'run_pipeline': None
+    }
+    create_directory_and_files(project_path, dir_structure)
+    user_define_path = path.join(project_path, 'user_define_modules')
+    user_define_init(path.join(user_define_path, '__init__.py'))
+    return project_path, user_define_path
+
+
+def classification_pipeline_init(project_path):
+    src_filepath = path.join(root, 'project_init_files', 'classification', 'run_pipeline')
+    filepath = path.join(project_path, 'run_pipeline.py')
     file2file(src_filepath, filepath)
 
 

@@ -5,7 +5,8 @@ from .path_util import files_form_folder, create_directory_and_files, file2file
 from .options import yaml_load, opt2str, set_random_seed, dict2yaml, yaml2dict
 from .annotation import add_annotation
 from .image_util import load_image, restore_image, save_image, find_image_path
-from .model_util import default_init_weights, make_layer
+from .dl_model_util import (default_init_weights, make_layer, get_paired_dataloader,
+                            DatasetIter)
 
 __all__ = [
     # logger.py
@@ -34,7 +35,9 @@ __all__ = [
     'restore_image',
     'save_image',
     'find_image_path',
-    # model_util.py
+    # dl_model_util.py
     'default_init_weights',
     'make_layer',
+    'get_paired_dataloader',
+    'DatasetIter'
 ]

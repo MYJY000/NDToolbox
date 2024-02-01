@@ -81,45 +81,14 @@ class DLBaseModel:
         raise NotImplementedError
 
     def feed_data(self, data):
-        self.train_x = data.get('train_x')
-        self.train_y = data.get('train_y')
-        self.train_opt = data.get('train_opt')
-        self.val_x = data.get('val_x')
-        self.val_y = data.get('val_y')
-        self.val_opt = data.get('val_opt')
-        self.model_path = data.get('model_path')
+        raise NotImplementedError
 
-    def save_state(self, epoch):
-        state = {
-            'epoch': epoch,
-            'optimizers': [],
-            'schedulers': []
-        }
-        for optimizer in self.optimizers:
-            state['optimizers'].append(optimizer.state_dict())
-        for scheduler in self.schedulers:
-            state['schedulers'].append(scheduler.state_dict())
-        save_filename = f'{epoch}.state'
-        save_path = os.path.join(self.model_path, save_filename)
+    def init_train_setting(self):
+        raise NotImplementedError
 
-        retry = 3
-        while retry > 0:
-            try:
-                torch.save(state, save_path)
-            except Exception as e:
-                self.logger.warning(f'Save training state error: {e},'
-                                    f' remaining retry times: {retry - 1}')
-                time.sleep(1)
-            else:
-                break
-            finally:
-                retry -= 1
-        if retry == 0:
-            self.logger.warning(f'Still cannot save {save_path}.')
-
-    def save_network(self, nets, net_label, epoch, net_keys='default_net'):
+    def save_network(self, nets, model_path, net_label, epoch, net_keys='params'):
         save_filename = f'{net_label}_{epoch}.pth'
-        save_path = os.path.join(self.model_path, save_filename)
+        save_path = os.path.join(model_path, save_filename)
 
         nets = nets if isinstance(nets, list) else [nets]
         net_keys = net_keys if isinstance(net_keys, list) else [net_keys]
@@ -141,6 +110,7 @@ class DLBaseModel:
             except Exception as e:
                 self.logger.warning(f'Save model error: {e}, remaining'
                                     f' retry times: {retry - 1}')
+                time.sleep(1)
             else:
                 break
             finally:
@@ -179,3 +149,50 @@ class DLBaseModel:
                     self.logger.warning(f'Size different, ignore [{k}], Current net: '
                                         f'{net[k].shape}, loaded net: {load_net[k].shape}')
                     load_net[k + '.ignore'] = load_net.pop(k)
+
+    def print_network(self, net):
+        net_cls_str = f'{net.__class__.__name__}'
+        net_str = str(net)
+        net_params = sum(map(lambda x: x.numel(), net.parameters()))
+        self.logger.info(f'Network: {net_cls_str}, with parameters: {net_params:, d}')
+        self.logger(net_str)
+
+    def save_training_state(self, state_path, epoch):
+        state = {'epoch': epoch, 'optimizers': [], 'schedulers': []}
+        for o in self.optimizers:
+            state['optimizers'].append(o.state_dict())
+        for s in self.schedulers:
+            state['schedulers'].append(s.state_dict())
+        save_filenames = f'{epoch}.state'
+        save_path = os.path.join(state_path, save_filenames)
+
+        retry = 3
+        while retry > 0:
+            try:
+                torch.save(state, save_path)
+            except Exception as e:
+                self.logger.warning(f'Save training state error: {e}, '
+                                    f'remaining retry times: {retry - 1}')
+                time.sleep(1)
+            else:
+                break
+            finally:
+                retry -= 1
+        if retry == 0:
+            self.logger.warning(f'Still cannot saving {save_path}.')
+
+    def resume_training(self, resume_path):
+        if torch.cuda.is_available():
+            device_id = torch.cuda.current_device()
+            resume_state = torch.load(resume_path, map_location=lambda storage, loc: storage.cuda(device_id))
+        else:
+            resume_state = torch.load(resume_path, map_location=lambda storage, loc: storage)
+        self.logger.info(f"Resume training from epoch: {resume_state['epoch']}")
+        '''
+        修改参数为 resume_state，将上面部分代码置入流程中
+        '''
+
+    def update_lr(self, current_iter):
+        if current_iter > 1:
+            for scheduler in self.schedulers:
+                scheduler.step()
