@@ -1,5 +1,6 @@
 from copy import deepcopy
 
+import torch
 from ndbox.utils import METRIC_REGISTRY
 from .regression_metric import calculate_R2, calculate_cc, calculate_mae, calculate_mse, calculate_rmse
 from .classification_metric import (calculate_precision, calculate_accuracy, calculate_recall,
@@ -37,6 +38,10 @@ def calculate_metric(y_true, y_pred, opt):
 
     opt = deepcopy(opt)
     metric_type = opt.pop('type')
+    if isinstance(y_true, torch.Tensor):
+        y_true = y_true.cpu().numpy()
+    if isinstance(y_pred, torch.Tensor):
+        y_pred = y_pred.cpu().numpy()
     metric = METRIC_REGISTRY.get(metric_type)(y_true, y_pred, **opt)
     return metric
 

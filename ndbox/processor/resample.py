@@ -5,7 +5,7 @@ from copy import deepcopy
 from ndbox.utils import PROCESSOR_REGISTRY
 
 
-def float_equal(num1, num2, eps=1e-10):
+def float_equal(num1, num2, eps=0.001):
     if abs(num1 - num2) < eps:
         return True
     return False
@@ -47,7 +47,7 @@ def resample(nwb_data, target_bin: float, **kwargs):
             ])
         spike_arr[nan_mask] = np.nan
         spike_df = pd.DataFrame(spike_arr, index=nwb_data.data.index[::resample_factor],
-                                columns=spike_columns, dtype='float64')
+                                columns=spike_columns, dtype='float32')
         other_df = nwb_data.data[other_columns].iloc[::resample_factor]
         nwb_data.data = pd.concat([spike_df, other_df], axis=1)
         nwb_data.data.sort_index(axis=1, inplace=True)

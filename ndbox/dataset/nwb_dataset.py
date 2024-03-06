@@ -37,7 +37,7 @@ class NWBDataset:
         self.behavior_list = behavior if behavior is not None else []
         self.spike_identifier = spike_identifier
         self.smooth_identifier = 'smooth#'
-        self.split_identifier = 'split#'
+        self.split_identifier = '#'
         self.skip_fields = skip_fields if skip_fields is not None else []
 
         self.data_dict, self.content_dict = self._build_data()
@@ -180,7 +180,7 @@ class NWBDataset:
                 stop_time = max(stop_time, end_time)
             timestamps = (np.arange(start_time, stop_time, round(bin_size, 6))).round(6)
             timestamps_td = pd.to_timedelta(timestamps, unit='s')
-            spike_counts = np.full((len(timestamps), len(units)), 0.0, dtype='float64')
+            spike_counts = np.full((len(timestamps), len(units)), 0.0, dtype='float32')
             for idx, (_, unit) in enumerate(units.iterrows()):
                 hist, bins = np.histogram(unit.spike_times, bins=len(timestamps),
                                           range=(timestamps[0], timestamps[-1]))
@@ -191,7 +191,7 @@ class NWBDataset:
                 max_length = max(max_length, len(str(c)))
             columns = [self.spike_identifier + str(c).zfill(max_length) for c in columns]
             units_data = pd.DataFrame(spike_counts, index=timestamps_td,
-                                      columns=columns).astype('float64', copy=False)
+                                      columns=columns).astype('float32', copy=False)
         elif isinstance(units_obj, TimeSeries):
             if units_obj.rate is None:
                 self.logger.warning(f"The units is a Timeseries class, "
@@ -210,7 +210,7 @@ class NWBDataset:
             columns = [self.spike_identifier + str(c).zfill(max_length)
                        for c in range(spike_counts.shape[1])]
             units_data = pd.DataFrame(spike_counts, index=timestamps_td,
-                                      columns=columns).astype('float64', copy=False)
+                                      columns=columns).astype('float32', copy=False)
         else:
             self.logger.warning(f"Units datasets class not support!")
             return

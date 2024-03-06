@@ -35,12 +35,12 @@ def rectify(arr):
 
 def smooth_1d(x, window, ignore_nans):
     if ignore_nans and np.any(np.isnan(x)):
-        x.astype('float64')
+        x.astype('float32')
         splits = np.where(np.diff(np.isnan(x)))[0] + 1
         seqs = np.split(x, splits)
         seqs = [seq if np.any(np.isnan(seq)) else
                 rectify(signal.convolve(seq, window, 'same')) for seq in seqs]
         y = np.concatenate(seqs)
     else:
-        y = signal.convolve(x.astype('float64'), window, 'same')
+        y = signal.convolve(x.astype('float32'), window, 'same')
     return y

@@ -6,7 +6,7 @@ from ndbox.utils import ARCH_REGISTRY
 @ARCH_REGISTRY.register()
 class MLP(nn.Module):
 
-    def __init__(self, dim_in, dim_out, hidden_dims=None, dropout=0):
+    def __init__(self, dim_in, dim_out, hidden_dims=None, dropout=0, **kwargs):
         super(MLP, self).__init__()
         if hidden_dims is None:
             hidden_dims = []

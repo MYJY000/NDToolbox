@@ -28,72 +28,7 @@ dataset:
 
 
 experiment:
-#  exp_1:
-#    processor: # The order in the config file is the order in the program executes the processor
-#      SubIndy:
-#        resample:
-#          type: resample
-#          target_bin: 0.1
-#        smooth:
-#          type: gaussian_smooth
-#          gauss_width: 0.5  # the standard deviation of the Gaussian to use for smoothing, in seconds
-#          ignore_nans: False
-#        lag:
-#          type: lag_offset
-#          offset: 0.1       # The behavior data lagged behind neural data by 0.1 seconds.
-#        split:
-#          type: train_test_bins_split
-#          test_size: 0.3
-#          shuffle: False
-#          idx: 0
-#    model:
-#      type: WienerCascadeRegression
-#      degree: 3
-#    train:
-#      dataset: SubIndy
-#      target: ['behavior/finger_vel']
-#    test:
-#      dataset: SubIndy
-#      target: ['behavior/finger_vel']
-#    metrics:
-#      R2:
-#        type: calculate_R2
-#      CC:
-#        type: calculate_cc
-#
-#  exp_2:
-#    processor: # The order in the config file is the order in the program executes the processor
-#      SubIndy:
-#        resample:
-#          type: resample
-#          target_bin: 0.1
-#        smooth:
-#          type: gaussian_smooth
-#          gauss_width: 0.5  # the standard deviation of the Gaussian to use for smoothing, in seconds
-#          ignore_nans: False
-#        lag:
-#          type: lag_offset
-#          offset: 0.1       # The behavior data lagged behind neural data by 0.1 seconds.
-#        split:
-#          type: KFord_split
-#          n_splits: 3
-#          shuffle: False
-#    model:
-#      type: KalmanFilterRegression
-#      C: 1
-#    train:
-#      dataset: SubIndy
-#      target: ['behavior/finger_vel']
-#    test:
-#      dataset: SubIndy
-#      target: ['behavior/finger_vel']
-#    metrics:
-#      R2:
-#        type: calculate_R2
-#      CC:
-#        type: calculate_cc
-
-  exp_3:
+  exp_1:
     processor: # The order in the config file is the order in the program executes the processor
       SubIndy:
         resample:
@@ -110,42 +45,48 @@ experiment:
           type: train_test_bins_split
           test_size: 0.3
           shuffle: False
+          idx: 0
     model:
-      type: MLPRegression
-#      path:
-#        pretrain_net: ~
-#        state_path: ~
-      device: cpu
-      network:
-        type: MLP
-        dim_in: 130
-        dim_out: 3
-        hidden_dims: [100, 100]
-        dropout: 0
+      type: WienerCascadeRegression
+      degree: 3
     train:
       dataset: SubIndy
-      target: [ 'behavior/finger_vel' ]
-      epochs: 200
-      optimizer:
-        type: Adma
-        lr: 0.001
-        betas: [0.9, 0.99]
-      scheduler:
-        type: MultiStepLR
-        milestones: [50, 150]
-        gamma: 0.5
-      loss:
-        type: L1Loss
-        loss_weight: 1.0
-      log_freq: 20
-      save_checkpioint_freq: 100
-    val:
+      target: ['behavior/finger_vel']
+    test:
       dataset: SubIndy
-      target: [ 'behavior/finger_vel' ]
-      val_freq: 50
-    test_1:
+      target: ['behavior/finger_vel']
+    metrics:
+      R2:
+        type: calculate_R2
+      CC:
+        type: calculate_cc
+
+  exp_2:
+    processor: # The order in the config file is the order in the program executes the processor
+      SubIndy:
+        resample:
+          type: resample
+          target_bin: 0.1
+        smooth:
+          type: gaussian_smooth
+          gauss_width: 0.5  # the standard deviation of the Gaussian to use for smoothing, in seconds
+          ignore_nans: False
+        lag:
+          type: lag_offset
+          offset: 0.1       # The behavior data lagged behind neural data by 0.1 seconds.
+        split:
+          type: KFord_split
+          n_splits: 3
+          shuffle: False
+    model:
+      type: KalmanFilterRegression
+      C: 1
+    train:
       dataset: SubIndy
-      target: [ 'behavior/finger_vel' ]
+      target: ['behavior/finger_vel']
+    test:
+      dataset: SubIndy
+      target: ['behavior/finger_vel']
     metrics:
       R2:
         type: calculate_R2

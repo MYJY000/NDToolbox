@@ -1,0 +1,152 @@
+name: test
+random_seed: 0
+
+dataset:
+  SubIndy:
+    name: SubIndy
+    type: NWBDataset
+    path: /Users/yjy/Desktop/nd/NDToolbox/datasets/sub_indy/sub-Indy_desc-train_behavior+ecephys.nwb
+    units:
+      field: units        # the units field name in nwb file.
+      bin_size: 0.001     # bin size, unit is seconds.
+    trials:
+      field: trials       # the trials field name in nwb file.
+      start: start_time   # the column name of trial start time.
+      stop: stop_time     # the column name of trial stop time.
+    behavior: ['behavior/cursor_pos', 'behavior/finger_pos', 'behavior/finger_vel', 'behavior/target_pos']
+    skip_fields: None
+
+#  SubMonk:
+#    name: SubMonk
+#    type: NWBDataset
+#    path: /Users/yjy/Desktop/nd/NDToolbox/datasets/sub-monk-g.nwb
+#    units:
+#      field: behavior/spike_counts
+#    trials:
+#      field: trials
+#    behavior: ['behavior/cursor']
+
+
+experiment:
+#  exp_1:
+#    processor: # The order in the config file is the order in the program executes the processor
+#      SubIndy:
+#        resample:
+#          type: resample
+#          target_bin: 0.1
+#        smooth:
+#          type: gaussian_smooth
+#          gauss_width: 0.5  # the standard deviation of the Gaussian to use for smoothing, in seconds
+#          ignore_nans: False
+#        lag:
+#          type: lag_offset
+#          offset: 0.1       # The behavior data lagged behind neural data by 0.1 seconds.
+#        split:
+#          type: train_test_bins_split
+#          test_size: 0.3
+#          shuffle: False
+#          idx: 0
+#    model:
+#      type: WienerCascadeRegression
+#      degree: 3
+#    train:
+#      dataset: SubIndy
+#      target: ['behavior/finger_vel']
+#    test:
+#      dataset: SubIndy
+#      target: ['behavior/finger_vel']
+#    metrics:
+#      R2:
+#        type: calculate_R2
+#      CC:
+#        type: calculate_cc
+#
+#  exp_2:
+#    processor: # The order in the config file is the order in the program executes the processor
+#      SubIndy:
+#        resample:
+#          type: resample
+#          target_bin: 0.1
+#        smooth:
+#          type: gaussian_smooth
+#          gauss_width: 0.5  # the standard deviation of the Gaussian to use for smoothing, in seconds
+#          ignore_nans: False
+#        lag:
+#          type: lag_offset
+#          offset: 0.1       # The behavior data lagged behind neural data by 0.1 seconds.
+#        split:
+#          type: KFord_split
+#          n_splits: 3
+#          shuffle: False
+#    model:
+#      type: KalmanFilterRegression
+#      C: 1
+#    train:
+#      dataset: SubIndy
+#      target: ['behavior/finger_vel']
+#    test:
+#      dataset: SubIndy
+#      target: ['behavior/finger_vel']
+#    metrics:
+#      R2:
+#        type: calculate_R2
+#      CC:
+#        type: calculate_cc
+
+  exp_3:
+    processor: # The order in the config file is the order in the program executes the processor
+      SubIndy:
+        resample:
+          type: resample
+          target_bin: 0.5
+        smooth:
+          type: gaussian_smooth
+          gauss_width: 0.5  # the standard deviation of the Gaussian to use for smoothing, in seconds
+          ignore_nans: False
+        lag:
+          type: lag_offset
+          offset: 0.1       # The behavior data lagged behind neural data by 0.1 seconds.
+        split:
+          type: train_test_bins_split
+          test_size: 0.3
+          shuffle: False
+    model:
+      type: MLPRegression
+#      path:
+#        pretrain_net_path: ~
+#        resume_path: ~
+      device: cpu
+      network:
+        type: MLP
+        dim_in: 130
+        dim_out: 2
+        hidden_dims: [100, 100]
+        dropout: 0
+    train:
+      dataset: SubIndy
+      target: [ 'behavior/finger_vel' ]
+      epochs: 20
+      total_iter: 20000
+      optimizer:
+        type: Adam
+        lr: 0.001
+        betas: [0.9, 0.99]
+      scheduler:
+        type: ConstantLR
+      loss:
+        type: L1Loss
+        loss_weight: 1.0
+      log_freq: 500
+      save_checkpoint_freq: 10000
+    val:
+      dataset: SubIndy
+      target: [ 'behavior/finger_vel' ]
+      val_freq: 5000
+    test_1:
+      dataset: SubIndy
+      target: [ 'behavior/finger_vel' ]
+    metrics:
+      R2:
+        type: calculate_R2
+      CC:
+        type: calculate_cc

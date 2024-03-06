@@ -5,6 +5,7 @@ from .wiener_filter import WienerFilterRegression, WienerFilterClassification
 from .wiener_cascade import WienerCascadeRegression
 from .kalman_filter import KalmanFilterRegression
 from .support_vector_machine import SupportVectorRegression
+from .mlp import MLPRegression
 
 __all__ = [
     'build_model',
@@ -17,6 +18,8 @@ __all__ = [
     'KalmanFilterRegression',
     # support_vector_machine.py
     'SupportVectorRegression',
+    # mlp.py
+    'MLPRegression',
 ]
 
 

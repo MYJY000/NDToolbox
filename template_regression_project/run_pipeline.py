@@ -3,6 +3,7 @@ import random
 import argparse
 import time
 import datetime
+import torch
 
 import numpy as np
 import pandas as pd
@@ -89,8 +90,8 @@ def run_pipeline():
         # fit model
         model_load_path = model_opt.get('path')
         model_list = []
-        if model_load_path is not None:
-            model = build_model(model_opt)
+        model = build_model(model_opt)
+        if model_load_path is not None and model.identifier == 'ML':
             model.load(model_load_path)
             model_list.append(model)
         else:
@@ -115,7 +116,8 @@ def run_pipeline():
                 model_path = path.join(exp_path, 'model')
                 os.makedirs(model_path)
                 if len(split_col) == 0:  # all data
-                    model = train_pipeline(
+                    train_pipeline(
+                        model=model,
                         train_x=train_x,
                         train_y=train_y,
                         train_opt=train_opt,
@@ -131,7 +133,8 @@ def run_pipeline():
                 else:
                     for idx, col in enumerate(split_col):
                         mask = split_data[:, idx]
-                        model = train_pipeline(
+                        train_pipeline(
+                            model=model,
                             train_x=train_x[mask == TRAIN_MASK],
                             train_y=train_y[mask == TRAIN_MASK],
                             train_opt=train_opt,
@@ -222,13 +225,20 @@ def run_pipeline():
         logger.info(f'End experiment {exp_name}.')
 
 
-def load_resume_state():
-    pass
+def load_resume_state(model_opt):
+    resume_path = model_opt.get('path', OrderedDict()).get('resume_path', None)
+    if resume_path is None:
+        return None
+    if torch.cuda.is_available():
+        device_id = torch.cuda.current_device()
+        resume_state = torch.load(resume_path, map_location=lambda storage, loc: storage.cuda(device_id))
+    else:
+        resume_state = torch.load(resume_path, map_location=lambda storage, loc: storage)
+    return resume_state
 
 
-def train_pipeline(train_x, train_y, train_opt, model_path, model_name_suffix, model_opt,
-                   val_x, val_y, val_opt, logger):
-    model = build_model(model_opt)
+def train_pipeline(model, train_x, train_y, train_opt, model_path, model_name_suffix,
+                   model_opt, val_x, val_y, val_opt, logger):
     model.name = model.name + model_name_suffix
     save_path = path.join(model_path, model.name)
     if model.identifier == 'ML':
@@ -240,22 +250,52 @@ def train_pipeline(train_x, train_y, train_opt, model_path, model_name_suffix, m
         logger.info('Save model.')
         model.save(save_path)
     elif model.identifier == 'DL':
-        '''
-        1. model.feed_data(data)
-        2. init train setting
-        3. loop train epoch
-        '''
+        start_epoch = 0
+        cur_iter = 0
+        resume_state = load_resume_state(model_opt)
+        if resume_state is not None:
+            model.resume_training(resume_state)
+            logger.info(f"Resume training from epoch: {resume_state['epoch']}, iter: {resume_state['iter']}")
+            start_epoch = resume_state['epoch']
+            cur_iter = resume_state['iter']
         tot_epochs = train_opt.get('epochs', 10)
+        logger.info(f'Iters per epoch: {len(train_x)}')
+        tot_iter = train_opt.get('total_iter', tot_epochs * len(train_x))
         train_dataloader = get_paired_dataloader(train_x, train_y)
         train_iter = DatasetIter(train_dataloader)
-        model.init_train_setting()
-        logger.info('Start training.')
+        model.init_train_setting(train_opt)
+        logger.info(f"Start training from epoch: {start_epoch}, iter: {cur_iter}.")
         start_time = time.time()
-        for epoch in range(tot_epochs + 1):
+        for epoch in range(start_epoch, tot_epochs + 1):
             train_iter.reset()
-            if val_x is not None:
-                val_dataloader = get_paired_dataloader(val_x, val_y)
-    return model
+            train_data = train_iter.next()
+
+            while train_data is not None:
+                cur_iter += 1
+                if cur_iter > tot_iter:
+                    break
+                model.update_lr(cur_iter)
+                model.feed_data(train_data)
+                model.optimize_parameters(cur_iter)
+
+                if cur_iter % train_opt['log_freq'] == 0:
+                    logger.info(f'Epoch: {epoch}, iter: {cur_iter}')
+                    logger.info(f'lr: {model.get_current_lr()}')
+                    logger.info(f'time: {time.time() - start_time}')
+
+                if cur_iter % train_opt['save_checkpoint_freq'] == 0:
+                    logger.info(f'Saving checkpoint {cur_iter}.')
+                    model.save(save_path, epoch, cur_iter)
+
+                if (len(val_opt) > 0) and (cur_iter % val_opt['val_freq'] == 0):
+                    logger.info('Validating not implemented yet.')
+
+                train_data = train_iter.next()
+
+        consumed_time = str(datetime.timedelta(seconds=int(time.time() - start_time)))
+        logger.info(f'End of training. Time consumed: {consumed_time}.')
+        logger.info('Save model.')
+        model.save(save_path)
 
 
 def test_pipeline(x, y_true, model_list, metrics_opt, mask=None, select=None):
