@@ -6,6 +6,7 @@ from .wiener_cascade import WienerCascadeRegression
 from .kalman_filter import KalmanFilterRegression
 from .support_vector_machine import SupportVectorRegression
 from .mlp import MLPRegression
+from .LSTM import LSTMRegression
 
 __all__ = [
     'build_model',
@@ -20,6 +21,8 @@ __all__ = [
     'SupportVectorRegression',
     # mlp.py
     'MLPRegression',
+    # LSTM.py
+    'LSTMRegression'
 ]
 
 

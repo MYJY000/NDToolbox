@@ -4,7 +4,6 @@ import argparse
 import time
 import datetime
 import torch
-
 import numpy as np
 import pandas as pd
 from os import path
@@ -14,7 +13,7 @@ from ndbox.model import build_model
 from ndbox.processor import TRAIN_MASK, TEST_MASK
 from ndbox.utils import (yaml_load, opt2str, set_random_seed, get_root_logger,
                          load_image, restore_image, file2file, get_paired_dataloader,
-                         DatasetIter)
+                         DatasetIter, run_format)
 
 try:
     import user_define_modules
@@ -72,6 +71,7 @@ def run_pipeline():
         logger.info(f'Start experiment {exp_name}.')
 
         processor_opt = exp_opt.get('processor', OrderedDict())
+        format_opt = exp_opt.get('format', OrderedDict())
         model_opt = exp_opt.get('model', OrderedDict())
         train_opt = exp_opt.get('train', OrderedDict())
         val_opt = exp_opt.get('val', OrderedDict())
@@ -122,32 +122,35 @@ def run_pipeline():
                         train_y=train_y,
                         train_opt=train_opt,
                         model_path=model_path,
-                        model_name_suffix='',
                         model_opt=model_opt,
                         val_x=val_x,
                         val_y=val_y,
                         val_opt=val_opt,
+                        format_opt=format_opt,
                         logger=logger
                     )
                     model_list.append(model)
                 else:
                     for idx, col in enumerate(split_col):
                         mask = split_data[:, idx]
+                        model = build_model(model_opt)
+                        model.name = model.name + '_' + str(col)
                         train_pipeline(
                             model=model,
                             train_x=train_x[mask == TRAIN_MASK],
                             train_y=train_y[mask == TRAIN_MASK],
                             train_opt=train_opt,
                             model_path=model_path,
-                            model_name_suffix='_' + str(col),
                             model_opt=model_opt,
                             val_x=val_x,
                             val_y=val_y,
                             val_opt=val_opt,
+                            format_opt=format_opt,
                             logger=logger,
                         )
                         model_list.append(model)
                 # calculate and save train metrics
+                logger.info('Train metrics')
                 metrics_result = None
                 if len(split_col) == 0:
                     metrics_result = test_pipeline(
@@ -155,6 +158,7 @@ def run_pipeline():
                         y_true=train_y,
                         model_list=model_list,
                         metrics_opt=metrics_opt,
+                        format_opt=format_opt
                     )
                 elif len(split_col) == len(model_list):
                     metrics_result = test_pipeline(
@@ -162,6 +166,7 @@ def run_pipeline():
                         y_true=train_y,
                         model_list=model_list,
                         metrics_opt=metrics_opt,
+                        format_opt=format_opt,
                         mask=split_data,
                         select=[TRAIN_MASK]
                     )
@@ -191,6 +196,7 @@ def run_pipeline():
                         y_true=test_y,
                         model_list=model_list,
                         metrics_opt=metrics_opt,
+                        format_opt=format_opt
                     )
                 elif len(split_col) == len(model_list):
                     metrics_result = test_pipeline(
@@ -198,6 +204,7 @@ def run_pipeline():
                         y_true=test_y,
                         model_list=model_list,
                         metrics_opt=metrics_opt,
+                        format_opt=format_opt,
                         mask=split_data,
                         select=[TEST_MASK]
                     )
@@ -237,9 +244,13 @@ def load_resume_state(model_opt):
     return resume_state
 
 
-def train_pipeline(model, train_x, train_y, train_opt, model_path, model_name_suffix,
-                   model_opt, val_x, val_y, val_opt, logger):
-    model.name = model.name + model_name_suffix
+def train_pipeline(model, train_x, train_y, train_opt, model_path, model_opt,
+                   val_x, val_y, val_opt, format_opt, logger):
+    val_xx, val_yy = None, None
+    if format_opt.get('type') is not None:
+        train_x, train_y = run_format(train_x, train_y, format_opt)
+        if val_x is not None and val_y is not None:
+            val_xx, val_yy = run_format(val_x[1], val_y[1], format_opt)
     save_path = path.join(model_path, model.name)
     if model.identifier == 'ML':
         logger.info('Start training.')
@@ -252,6 +263,7 @@ def train_pipeline(model, train_x, train_y, train_opt, model_path, model_name_su
     elif model.identifier == 'DL':
         start_epoch = 0
         cur_iter = 0
+        model.init_train_setting(train_opt)
         resume_state = load_resume_state(model_opt)
         if resume_state is not None:
             model.resume_training(resume_state)
@@ -263,7 +275,6 @@ def train_pipeline(model, train_x, train_y, train_opt, model_path, model_name_su
         tot_iter = train_opt.get('total_iter', tot_epochs * len(train_x))
         train_dataloader = get_paired_dataloader(train_x, train_y)
         train_iter = DatasetIter(train_dataloader)
-        model.init_train_setting(train_opt)
         logger.info(f"Start training from epoch: {start_epoch}, iter: {cur_iter}.")
         start_time = time.time()
         for epoch in range(start_epoch, tot_epochs + 1):
@@ -287,7 +298,10 @@ def train_pipeline(model, train_x, train_y, train_opt, model_path, model_name_su
                     logger.info(f'Saving checkpoint {cur_iter}.')
                     model.save(save_path, epoch, cur_iter)
 
-                if (len(val_opt) > 0) and (cur_iter % val_opt['val_freq'] == 0):
+                if val_x is not None and (cur_iter % val_opt['val_freq'] == 0):
+                    # todo validating pipeline...
+                    if val_xx is not None and val_yy is not None:
+                        pass
                     logger.info('Validating not implemented yet.')
 
                 train_data = train_iter.next()
@@ -298,7 +312,9 @@ def train_pipeline(model, train_x, train_y, train_opt, model_path, model_name_su
         model.save(save_path)
 
 
-def test_pipeline(x, y_true, model_list, metrics_opt, mask=None, select=None):
+def test_pipeline(x, y_true, model_list, metrics_opt, format_opt, mask=None, select=None):
+    if format_opt.get('type') is not None:
+        x, y_true = run_format(x, y_true, format_opt)
     metrics_result = {}
     for idx, model in enumerate(model_list):
         if mask is not None:

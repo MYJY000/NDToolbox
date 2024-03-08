@@ -34,22 +34,29 @@ experiment:
           type: train_test_bins_split
           test_size: 0.3
           shuffle: False
+    format:
+      type: spike_rnn_format
+      bins_before: 4
+      bins_after: 4
+      bins_current: 1
     model:
-      type: MLPRegression
+      type: LSTMRegression
 #      path:
-#        pretrain_net_path: ~
-#        resume_path: ~
+#        pretrain_net_path: /Users/yjy/Desktop/nd/NDBOX/template_regression_project/results/test_1709888600/exp_1/model/LSTMRegression/LSTM_20000.pth
+#        resume_path: /Users/yjy/Desktop/nd/NDBOX/template_regression_project/results/test_1709888600/exp_1/model/LSTMRegression/20000.state
       device: cpu
       network:
-        type: MLP
-        dim_in: 130
-        dim_out: 2
-        hidden_dims: [100, 100]
+        type: LSTM
+        input_size: 130
+        output_size: 2
+        hidden_size: 12
+        seq_len: 9
+        num_layers: 1
         dropout: 0
     train:
       dataset: SubIndy
       target: [ 'behavior/finger_vel' ]
-      epochs: 10
+      epochs: 5
       total_iter: 20000
       optimizer:
         type: Adam

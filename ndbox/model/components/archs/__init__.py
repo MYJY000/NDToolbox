@@ -2,11 +2,14 @@ from copy import deepcopy
 
 from ndbox.utils import get_root_logger, ARCH_REGISTRY
 from .mlp import MLP
+from .LSTM import LSTM
 
 __all__ = [
     'build_arch',
     # mlp.py
     'MLP',
+    # LSTM.py
+    'LSTM',
 ]
 
 

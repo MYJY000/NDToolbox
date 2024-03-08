@@ -1,12 +1,14 @@
 from .logger import get_root_logger
 from .registry import (DATASET_REGISTRY, PROCESSOR_REGISTRY, MODEL_REGISTRY,
-                       METRIC_REGISTRY, ANALYZER_REGISTRY, ARCH_REGISTRY, LOSS_REGISTRY)
+                       METRIC_REGISTRY, ANALYZER_REGISTRY, ARCH_REGISTRY, LOSS_REGISTRY,
+                       FORMAT_REGISTRY)
 from .path_util import files_form_folder, create_directory_and_files, file2file
 from .options import yaml_load, opt2str, set_random_seed, dict2yaml, yaml2dict
 from .annotation import add_annotation
 from .image_util import load_image, restore_image, save_image, find_image_path
 from .dl_model_util import (default_init_weights, make_layer, get_paired_dataloader,
                             DatasetIter, weighted_loss)
+from .format import run_format, spike_rnn_format
 
 __all__ = [
     # logger.py
@@ -19,6 +21,7 @@ __all__ = [
     'ANALYZER_REGISTRY',
     'ARCH_REGISTRY',
     'LOSS_REGISTRY',
+    'FORMAT_REGISTRY',
     # path.py
     'files_form_folder',
     'create_directory_and_files',
@@ -41,5 +44,8 @@ __all__ = [
     'make_layer',
     'get_paired_dataloader',
     'DatasetIter',
-    'weighted_loss'
+    'weighted_loss',
+    # format.py
+    'run_format',
+    'spike_rnn_format'
 ]
