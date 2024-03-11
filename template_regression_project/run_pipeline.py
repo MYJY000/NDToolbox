@@ -290,9 +290,8 @@ def train_pipeline(model, train_x, train_y, train_opt, model_path, model_opt,
                 model.optimize_parameters(cur_iter)
 
                 if cur_iter % train_opt['log_freq'] == 0:
-                    logger.info(f'Epoch: {epoch}, iter: {cur_iter}')
-                    logger.info(f'lr: {model.get_current_lr()}')
-                    logger.info(f'time: {time.time() - start_time}')
+                    logger.info(f'Epoch: {epoch}, iter: {cur_iter}, time: {time.time() - start_time}')
+                    logger.info(f'Model log: {model.get_current_log()}')
 
                 if cur_iter % train_opt['save_checkpoint_freq'] == 0:
                     logger.info(f'Saving checkpoint {cur_iter}.')

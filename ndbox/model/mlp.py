@@ -1,3 +1,4 @@
+import torch
 from .base_model import DLBaseModel
 from .components import build_arch, build_loss
 from ndbox.utils import MODEL_REGISTRY
@@ -31,6 +32,9 @@ class MLPRegression(DLBaseModel):
         loss = self.loss(self.output, self.data_y)
         loss.backward()
         self.optimizer_net.step()
+
+        with torch.no_grad():
+            self.log_dict['loss'] = loss.mean().item()
 
     def save(self, path, epoch=-1, cur_iter=-1):
         self.save_network(self.net, path, 'mlp', cur_iter, 'net')

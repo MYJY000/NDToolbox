@@ -66,6 +66,7 @@ class DLBaseModel:
         self.optimizers = []
         self.schedulers = []
         self.net = None
+        self.log_dict = {}
 
     def fit(self, x, y):
         raise NotImplementedError
@@ -222,6 +223,9 @@ class DLBaseModel:
 
     def get_current_lr(self):
         return [param_group['lr'] for param_group in self.optimizers[0].param_groups]
+
+    def get_current_log(self):
+        return self.log_dict
 
     def get_optimizer(self, optim_type, params, lr, **kwargs):
         if optim_type == 'Adam':
