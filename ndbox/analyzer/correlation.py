@@ -1,18 +1,227 @@
+"""
+Correlative measures on spike trains
+    `covariance`: Calculate the NxN matrix of pairwise covariances between all combinations of 
+        N binned spike trains.
+    `correlation_coefficient`: Calculate the NxN matrix of pairwise Pearson's correlation coefficients 
+        between all combinations of N binned spike trains.
+    `cross_correlation_histogram`: Computes the cross-correlation histogram (CCH) between two binned 
+        spike trains binned_spiketrain_i and binned_spiketrain_j.
+    `spike_time_tiling_coefficient`: Calculates the Spike Time Tiling Coefficient (STTC) as described 
+        in (Cutts and Eglen, 2014) following their implementation in C.
+
+Spike train dissimilarity
+    `victor_purpura_distance`:
+        Calculates the Victor-Purpura's (VP) distance.
+    `van_rossum_distance`:
+        Calculates the van Rossum distance (Rossum, 2001), defined as Euclidean distance of the spike trains 
+        convolved with a causal decaying exponential smoothing filter.
+    `spike_contrast`: Calculates the synchrony of spike trains, according to (Ciba et al., 2018).
+    `Synchrotool`: Tool class to find, remove and/or annotate the presence of synchronous spiking 
+        events across multiple spike trains.
+
+autocorrelogram
+jointpsth
+
+"""
+
+
+#
+# import numpy as np
+# from ndbox.utils.registry import ANALYZER_REGISTRY
+# from typing import List, Tuple
+# from matplotlib.pyplot import Axes
+#
+# @ANALYZER_REGISTRY.register()
+# # https://elephant.readthedocs.io/en/latest/reference/_toctree/spike_train_synchrony/elephant.spike_train_synchrony.spike_contrast.html
+# def scs_plot(spike_list, save_path, t_start=None, t_stop=None, bin_size=None, shrink=0.9,
+#              axes=None, color='#646464', xlabel='Time bins(sec)', ylabel='Spike counts', title='Cross-correlograms',
+#              **kwargs
+#              ):
+#     """
+#     Spike-Contrast Synchrony plot. It calculate the synchrony of spike trains,
+#     the spike trains can have different length. We use spike-contrast as a
+#     measurement of spike-train synchrony.
+#
+#     Parameters
+#     ----------
+#     spike_list: List[np.ndarray] or np.ndarray
+#         if data type is `List[np.ndarray]`, then spike_list[i] indicates the i-th neuron's
+#         spike stamps, spike_list[i] is a 1D array.
+#         if data type is np.ndarray, then it must be 2D array, spike_list[i] is the binned
+#         firing counts of the i-th neuron. Note that you must pass the `bin_size` argument
+#         in this way.
+#     t_start: float
+#         The record beginning timestamp.
+#     t_stop: float
+#         The record finishing timestamp.
+#     bin_size: float
+#         the bin width
+#     shrink: float
+#         A multiplier to shrink the bin size on each iteration.
+#         The value must be in range (0, 1). Default: 0.9
+#     save_path: str
+#         The directory to store the figure.
+#     axes: Axes or None
+#         Matplotlib axes handle. If None, new axes are created and returned.
+#     color: str or List[str]
+#         Color of raster line, can be an array
+#     xlabel: str
+#         The label of x-axis
+#     ylabel: str
+#         The label of y-axis
+#     title: str
+#         The title of the plot
+#
+#     Returns
+#     ------
+#     A history of spike-contrast synchrony, computed for a range of different bin sizes,
+#     alongside with the maximum value of the synchrony.
+#
+#     Tuple()
+#         synchrony: float
+#             Returns the synchrony of the input spike trains
+#         trace_contrast: np.ndarray
+#              the average sum of differences of the number of spikes in subsequent bins
+#         trace_active: np.ndarray
+#             the average number of spikes per bin, weighted by the number of spike trains
+#             containing at least one spike inside the bin;
+#         trace_synchrony: np.ndarray
+#             the product of `trace_contrast` and `trace_active`;
+#         bin_size: np.ndarray
+#             the X axis, a list of bin sizes that correspond to these traces.
+#
+#
+#     Raises
+#     ------
+#     ValueError
+#         If bin_shrink_factor is not in (0, 1) range.
+#         If the input spike trains contain no more than one spike-train.
+#     TypeError
+#         If the input spike trains is not a list or ndarray.
+#     """
+#     check_input(spike_list, bin_size)
+#     # TODO
+#     pass
+#
+#
+# @ANALYZER_REGISTRY.register()
+# # https://elephant.readthedocs.io/en/latest/reference/_toctree/spike_train_correlation/elephant.spike_train_correlation.correlation_coefficient.html
+# def coefficient_plot(spike_list, save_path, t_start=None, t_stop=None, bin_size=None, shrink=0.9,
+#                      axes=None, color='#646464', xlabel='Time bins(sec)', ylabel='Spike counts',
+#                      title='Cross-correlograms',
+#                      **kwargs
+#                      ):
+#     """
+#     Correlation Coefficient plot. For each pair of spike trains, the correlation coefficient
+#     is obtained by binning and at the desired bin size. For an input of N spike trains, an
+#     N x N matrix is returned. Each entry in the matrix is a real number ranging between
+#     -1 (perfectly anti-correlated spike trains) and +1 (perfectly correlated spike trains).
+#
+#     Parameters
+#     ----------
+#     spike_list: List[np.ndarray] or np.ndarray
+#         if data type is `List[np.ndarray]`, then spike_list[i] indicates the i-th neuron's
+#         spike stamps, spike_list[i] is a 1D array.
+#         if data type is np.ndarray, then it must be 2D array, spike_list[i] is the binned
+#         firing counts of the i-th neuron. Note that you must pass the `bin_size` argument
+#         in this way.
+#     t_start: float
+#         The record beginning timestamp.
+#     t_stop: float
+#         The record finishing timestamp.
+#     bin_size: float
+#         the bin width
+#     shrink: float
+#         A multiplier to shrink the bin size on each iteration.
+#         The value must be in range (0, 1). Default: 0.9
+#     save_path: str
+#         The directory to store the figure.
+#     axes: Axes or None
+#         Matplotlib axes handle. If None, new axes are created and returned.
+#     color: str or List[str]
+#         Color of raster line, can be an array
+#     xlabel: str
+#         The label of x-axis
+#     ylabel: str
+#         The label of y-axis
+#     title: str
+#         The title of the plot
+#
+#     Returns
+#     ------
+#     A history of spike-contrast synchrony, computed for a range of different bin sizes,
+#     alongside with the maximum value of the synchrony.
+#
+#     dict
+#         'synchrony': float
+#             Returns the synchrony of the input spike trains
+#         'trace_contrast': np.ndarray
+#              the average sum of differences of the number of spikes in subsequent bins
+#         'trace_active': np.ndarray
+#             the average number of spikes per bin, weighted by the number of spike trains
+#             containing at least one spike inside the bin;
+#         'trace_synchrony': np.ndarray
+#             the product of `trace_contrast` and `trace_active`;
+#         'bin_size': np.ndarray
+#             the X axis, a list of bin sizes that correspond to these traces.
+#
+#
+#     Raises
+#     ------
+#     ValueError
+#         If bin_shrink_factor is not in (0, 1) range.
+#         If the input spike trains contain no more than one spike-train.
+#     TypeError
+#         If the input spike trains is not a list or ndarray.
+#     """
+#     check_input(spike_list, bin_size)
+#     # TODO
+#     pass
+#
+#
+# @ANALYZER_REGISTRY.register()
+# def spade_plot(spike_list, save_path, t_start=None, t_stop=None, bin_size=None, shrink=0.9,
+#                axes=None, color='#646464', xlabel='Time bins(sec)', ylabel='Spike counts', title='Cross-correlograms',
+#                **kwargs
+#                ):
+#     # TODO
+#     pass
+#
+#
+# # https://elephant.readthedocs.io/en/latest/reference/cell_assembly_detection.html
+# def cad_plot():
+#     # TODO
+#     pass
+#
+#
+# def check_input(spike_list, bin_size):
+#     if isinstance(spike_list, np.ndarray):
+#         if spike_list.ndim < 2:
+#             raise TypeError("Get a numpy array. However, it's not 2-D.")
+#         elif bin_size is None:
+#             raise ValueError("Binned 2D array as input, however, bin_size is None.")
+#         else:
+#             raise NotImplementedError("to be continued ... ...")
+#     if isinstance(spike_list, list):
+#         if len(spike_list) < 2:
+#             raise ValueError("Data list should have more than 1 spike trains.")
+#         if not isinstance(spike_list[0], np.ndarray):
+#             raise TypeError("A numpy array is expected.")
+"""
 import numpy as np
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
-from .ana_base import Analyzer, Neuron, plot_th
+from .basic import Analyzer, Neuron, plot_th
 
 
 class CrossCorrelationAnalyzer(Analyzer):
-    ana_type = "plot_cross_correlogram"
-    description = "Relative analysis of `target` neuron relative to `reference` neuron " \
-        "with consideration of `stimulus`(or we say `event`/`mark`).\nIt shows the " \
-        "conditional probability of a target spike at time `t0+t` on the condition that" \
-        " there is a reference spike at time `t0` across trials."
-    name = "Cross Correlation Time Histogram"
-
+    "
+    Relative analysis of `target` neuron relative to `reference` neuron  
+    with consideration of `stimulus`(or we say `event`/`mark`).\nIt shows the
+    conditional probability of a target spike at time `t0+t` on the condition that 
+    there is a reference spike at time `t0` across trials.
+    "
     def __init__(self, target: np.ndarray, refer: np.ndarray, event_train: np.ndarray, logger_name=None):
         super().__init__(logger_name=logger_name)
         self.target = Neuron(target)
@@ -259,6 +468,6 @@ class JointPSTHAnalyzer(Analyzer):
 
     def plot_with_diag(self):
         pass
-
+"""
 
 

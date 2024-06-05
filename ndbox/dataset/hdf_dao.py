@@ -49,18 +49,9 @@ def _load_vars(file):
     var_list = []
     def valid_keys(name):
         if isinstance(file[name], h5py.Dataset):
-            if file[name].size > 1:
+            if file[name].shape != ():
                 var_list.append(name)
     file.visit(valid_keys)
     return var_list
 
-if __name__ == "__main__":
-    root = "C:/Users/mrrai/datasets/test/"
-    # file_name = "sub-Indy_desc-train_behavior+ecephys.nwb"
-    file_name = "indy_20160411_01.mat"
-    file = HierarchicalFileLoader(root+file_name)
-    for k in file.keys():
-        print(k)
-        print(file.load(k).shape)
-        print()
-    
+

@@ -139,3 +139,22 @@ def bypass(spiketrains, duration, high_pass, low_pass) -> list[int]:
         if sp.size >= high_pass and sp.size <= low_pass:
             spidx.append(i)
     return spidx
+
+def train2idxs(spiketrains) -> tuple[np.ndarray, np.ndarray]:
+    """cast `spiketrains` to `spiketime` and `spikeindex`
+    """
+    size_list = [st.size for st in spiketrains]
+    spikeindex = np.cumsum(np.array(size_list))
+    spiketime = np.hstack(spiketrains).squeeze()
+    return spiketime, spikeindex
+
+def idxs2train(spiketime, spikeindex) -> list[np.ndarray]:
+    """cast `spiketime` and `spikeindex` to `spiketrains`
+    """
+    prev = 0
+    spiketrains = []
+    for post in spikeindex:
+        spiketrains.append(spiketime[prev: post])
+        prev = post
+    return spiketrains
+

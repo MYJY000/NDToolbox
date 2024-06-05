@@ -1,65 +1,67 @@
 import numpy as np
 from .basic import NeuralDataset
 from .hdf_dao import HierarchicalFileLoader
+from .utils import idxs2train
 
-class HDFNeuralDataset(NeuralDataset, HierarchicalFileLoader):
-    """
-    Nonhuman Primate Reaching with Multichannel Sensorimotor Cortex Electrophysiology
-    Datasets Link: https://zenodo.org/records/3854034
-    Example Data: https://zenodo.org/records/3854034/files/indy_20160426_01.mat?download=1
-    """
+class HDFNeuralDataset(NeuralDataset):
     def __init__(self, path, **kwargs) -> None:
-        HierarchicalFileLoader.__init__(self, path)
+        self.hdf_agent = HierarchicalFileLoader(path)
         NeuralDataset.__init__(self, **kwargs)
-
-    def _load_behavior(self, behavior: str) -> np.ndarray:
-        """load the raw behaviors data
-        Returns
-        ------
-        target: 2D-ndarray(t, k)
-        """
     
-    def _load_behavior_binsize(self, **kwargs) -> float:
-        """load the original smaple rates
-        Returns
-        ------
-        old_target_binsize: float, e.g. 0.004 means for every 0.004s we sample a data point.
-        """
-
-    def load_behaviors(self, behavior, bin_size: float = None, t_start = None, t_stop = None) -> np.ndarray:
-        """get behaviors data like knematic data `cursor_pos`
-        `behavior`: str -- key
-        `bin_size`: float -- resample knematic data to `bin_size`(seconds), e.g. 0.1
-        [`t_start`, `t_stop`] -- only take the data between [`t_start`, `t_stop`]
-
-        Returns
-        ------
-        `targets`: ndarray(t, k) -- behaviors data/knematic data
-        """
-        if t_start is None:
-            t_start = self.t_start
-        if t_stop is None:
-            t_stop = self.t_stop
-        t_start = max(t_start, self.t_start)
-        t_stop = min(t_stop, self.t_stop)
-        self.old_target_binsize = self._load_behavior_binsize()
-        start_idx = int((t_start-self.t_start)/self.old_target_binsize)
-        stop_idx = int((t_stop-self.t_start)/self.old_target_binsize)+1
-        targets = self._load_behavior(behavior)
-        targets = targets[start_idx: stop_idx]
-
-        if bin_size is None:
-            return targets
+    def get_t_start(self, **kwargs) -> float:
+        if self.t_start is not None:
+            return self.t_start
         else:
-            self.current_target_binsize = bin_size
-            assert int(bin_size*1000) % int(1000*self.old_target_binsize) == 0, \
-            f"current sample binsize is {self.old_target_binsize}, new binsize is {bin_size}, please make sure {bin_size}/{self.old_target_binsize} be an integer"
-            duration = (stop_idx-start_idx)*self.old_target_binsize
-            t_steps = int(duration/bin_size)
-            scale = int(bin_size/self.old_target_binsize)
-            targets = targets[:t_steps*scale]
-            targets = targets[::scale]
-            return targets
-
-            
+            self.t_start = self.load('t_start')
+            self.append('t_start', self.t_start)
+            return self.load('t_start')
+    
+    def get_t_stop(self, **kwargs) -> float:
+        if self.t_stop is not None:
+            return self.t_stop
+        else:
+            self.t_stop = self.load('t_stop')
+            self.append('t_stop', self.t_stop)
+            return self.load('t_stop')
+    
+    def fetch_spiketrains(self, **kwargs) -> list[np.ndarray]:
+        if self.spiketrains is not None:
+            return self.spiketrains
+        else:
+            spiketime = self.load('spiketime')
+            spikeindex = self.load('spikeindex')
+            self.append('spiketime', spiketime)
+            self.append('spikeindex', spikeindex)
+            self.spiketrains = idxs2train(spiketime, spikeindex)
+            return self.spiketrains
+    
+    def fetch_behaviors(self, key: str) -> np.ndarray:
+        behavior = self.load(key)
+        self.append(key, behavior)
+        bin_size = self.load(key+"_bin_size")
+        self.append(key+"_bin_size", bin_size)
+        return behavior
+    
+    def fetch_event_stamps(self, key: str) -> np.ndarray:
+        event = self.load(key)
+        self.append(key, event)
+        return event
+    
+    def keys(self) -> list[str]:
+        return list(set(list(self.data_dict.keys()) + list(self.hdf_agent.keys())))
+    
+    def load(self, key: str) -> np.ndarray:
+        val = None
+        if key in self.data_dict:
+            val = self.data_dict[key]
+        elif key in list(self.hdf_agent.keys()):
+            val = self.hdf_agent.load(key)
+        if val is not None:
+            if isinstance(val, list):
+                if len(val) == 1:
+                    return val[0]
+            if isinstance(val, np.ndarray):
+                if val.size == 1:
+                    return val[0]
+        return val       
 
