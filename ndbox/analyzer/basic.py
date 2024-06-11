@@ -30,3 +30,4 @@ class Analysis(metaclass=ABCMeta):
     def get_params_plot(self):
         return self.params_plot
 
+

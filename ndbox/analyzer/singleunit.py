@@ -275,7 +275,7 @@ class PoincareMap(Analysis):
         """
         super(PoincareMap, self).__init__(dataset)
 
-    def analyze(self, t_start=None, t_stop=None):
+    def analyze(self, t_start=None, t_stop=None, max_width=None, bin_size=None):
         if t_start is None:
             t_start = self.dataset.get_t_start()
         if t_stop is None:
@@ -429,6 +429,42 @@ class PeriStimulusTimeHistogram(Analysis):
             fig.savefig(os.path.join(root, str(j)+'.png'), transparent=True, dpi=200, pad_inches=0)
             plt.clf()
     
+class JointISIDistribution(Analysis):
+    """
+    For each spike, a point is calculated where the X coordinate of the point is the current interspike interval
+    and Y coordinate of the point is the preceding interspike interval. The density of these points is shown in 
+    the graph.
+    """
+    def __init__(self, dataset: NeuralDataset):
+        super().__init__(dataset)
+    
+    def analyze(self, t_start=None, t_stop=None):
+        if t_start is None:
+            t_start = self.dataset.get_t_start()
+        if t_stop is None:
+            t_stop = self.dataset.get_t_stop()
+        self.params_data = {
+            't_start': t_start,
+            't_stop': t_stop
+        }
+        spiketrains = self.dataset.spiketrains
+        spiketrains = cut(spiketrains, t_start, t_stop)
+        intervals = [np.diff(sp) for sp in spiketrains]
+        joint_isi = [[i[:-1], i[1:]] for i in intervals]
+        self.anares = {'joint_isi': joint_isi}
+
+    def plot(self, root, bins=None, **kwargs):
+        import seaborn as sns
+        if bins is None:
+            bins = 100
+        fig = plt.figure()
+        n_units = len(self.anares['joint_isi'])
+        for j in range(n_units):
+            axes = fig.add_subplot(1,1,1)
+            hist, _, _ = np.histogram2d(self.anares['joint_isi'][j][0], self.anares['joint_isi'][j][1], bins=100)
+            sns.heatmap(ax=axes, data=hist, **kwargs)
+            fig.savefig(os.path.join(root, str(j)+'.png'), transparent=True, dpi=200, pad_inches=0)
+            plt.clf()
 
 # TuningAnalyzer
 class KinematicsTuningCurve(Analysis):

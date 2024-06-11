@@ -1,10 +1,10 @@
 from ndbox.utils.logger import get_root_logger
-from .sua import TimeHistAnalyzer, CumActivityAnalyzer, RasterAnalyzer, ISIAnalyzer, ISITimeHistAnalyzer
-from .sua import InstantFreqAnalyzer, AutocorrelogramAnalyzer, PoincareMapAnalyzer
-from .mua import RasterMulAnalyzer
+from .singleunit import TimeHistAnalyzer, CumActivityAnalyzer, RasterAnalyzer, ISIAnalyzer, ISITimeHistAnalyzer
+from .singleunit import InstantFreqAnalyzer, AutocorrelogramAnalyzer, PoincareMapAnalyzer
+from .correlation import RasterMulAnalyzer
 from .era import TuningAnalyzer, PeriStimulusAnalyzer
 from .rta import CrossCorrelationAnalyzer, JointPSTHAnalyzer
-from .ana_base import Analyzer
+from .basic import Analyzer
 from ndbox.utils import ANALYZER_REGISTRY
 from ndbox.dataset import NWBDataset
 import os
